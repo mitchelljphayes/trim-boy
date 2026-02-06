@@ -36,10 +36,10 @@
 }
 
 .theme-color {
-  --gb-lightest: 0 0% 94%;    /* #efefef */
-  --gb-light: 207 53% 82%;    /* #b0d4f1 */
-  --gb-dark: 355 82% 47%;     /* #cf1621 */
-  --gb-darkest: 0 0% 13%;     /* #222222 */
+  --gb-lightest: 40 20% 92%;    /* warm off-white */
+  --gb-light: 210 18% 78%;      /* muted steel blue */
+  --gb-dark: 355 45% 45%;       /* subdued burgundy */
+  --gb-darkest: 220 10% 18%;    /* dark charcoal with a cool tint */
   filter: none;
 }
 
