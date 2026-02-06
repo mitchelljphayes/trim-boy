@@ -22,6 +22,7 @@ import Breathwork from "@/pages/Breathwork";
 import Recharge from "@/pages/Recharge";
 import Yoga from "@/pages/Yoga";
 import Archive from "@/pages/Archive";
+import { LCDOverlay } from "@/components/LCDOverlay";
 
 function Router() {
   const [userName] = useState(() => localStorage.getItem("trim_user_name"));
@@ -64,8 +65,11 @@ function App() {
   return (
     <div id="app-root">
       <QueryClientProvider client={queryClient}>
-        <Toaster />
-        <Router />
+        <div className="lcd-ghosting">
+          <Toaster />
+          <Router />
+        </div>
+        <LCDOverlay />
       </QueryClientProvider>
     </div>
   );
