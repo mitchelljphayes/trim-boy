@@ -37,6 +37,21 @@ export function useWeeklyStats(userId: number | null) {
   });
 }
 
+// Get All Logs (Archive)
+export function useAllLogs(userId: number | null) {
+  return useQuery({
+    queryKey: [api.logs.getAll.path, userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const url = buildUrl(api.logs.getAll.path, { userId });
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch logs");
+      return api.logs.getAll.responses[200].parse(await res.json());
+    },
+    enabled: !!userId,
+  });
+}
+
 // Create Log
 export function useCreateLog() {
   const queryClient = useQueryClient();

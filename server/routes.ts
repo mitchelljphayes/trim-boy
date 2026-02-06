@@ -98,5 +98,16 @@ export async function registerRoutes(
     });
   });
 
+  app.get(api.logs.getAll.path, async (req, res) => {
+    const userIdStr = req.params.userId;
+    const userId = parseInt(userIdStr);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "Invalid User ID" });
+    }
+
+    const allLogs = await storage.getAllLogs(userId);
+    res.json(allLogs);
+  });
+
   return httpServer;
 }

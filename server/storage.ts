@@ -9,6 +9,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createLog(log: InsertLog): Promise<Log>;
   getLogsForWeek(userId: number, startDate: string, endDate: string): Promise<Log[]>;
+  getAllLogs(userId: number): Promise<Log[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -42,6 +43,13 @@ export class DatabaseStorage implements IStorage {
           lte(logs.date, endDate)
         )
       );
+  }
+
+  async getAllLogs(userId: number): Promise<Log[]> {
+    return await db.select()
+      .from(logs)
+      .where(eq(logs.userId, userId))
+      .orderBy(sql`${logs.date} DESC, ${logs.createdAt} DESC`);
   }
 }
 

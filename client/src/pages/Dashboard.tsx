@@ -63,6 +63,8 @@ export default function Dashboard() {
           <button 
             className="p-2 hover:bg-[hsl(var(--gb-light))] border-2 border-transparent hover:border-[hsl(var(--gb-dark))] transition-colors"
             title="Archive"
+            onClick={() => setLocation('/archive')}
+            data-testid="button-archive"
           >
             <FolderArchive className="w-6 h-6 text-[hsl(var(--gb-darkest))]" />
           </button>

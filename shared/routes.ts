@@ -48,6 +48,19 @@ export const api = {
         }),
       },
     },
+    getAll: {
+      method: 'GET' as const,
+      path: '/api/logs/all/:userId',
+      responses: {
+        200: z.array(z.object({
+          id: z.number(),
+          category: z.string(),
+          date: z.string(),
+          metadata: z.any().nullable(),
+          createdAt: z.string().nullable(),
+        })),
+      },
+    },
   },
 };
 
