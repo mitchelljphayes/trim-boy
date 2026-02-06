@@ -5,10 +5,14 @@ import {
   setGbcUnlocked,
   setGbcAnnounced,
   setGoldAnnouncedThisSession,
+  setLightningUnlocked,
+  setLightningAnnounced,
+  setLightningAnnouncedThisSession,
   logEvolutionEvent,
 } from '@/lib/streakManager';
 import type { EvolutionTier } from '@/lib/streakManager';
 import goldTrimBoy from "@assets/trimboy_gold_1770407871261.png";
+import lightningTrimBoy from "@assets/lioghtning_boy_1770409502230.png";
 
 const FW_COLORS = ['#FF3333', '#3366FF', '#FFDD00', '#33CC33', '#FF66CC', '#FF8800', '#00CCFF', '#FFFFFF'];
 const PARTICLE_COUNT = 60;
@@ -153,14 +157,142 @@ function FlameTransition({ onComplete }: { onComplete: () => void }) {
   );
 }
 
+const STATIC_COUNT = 12;
+
+function StaticParticles() {
+  const particles = Array.from({ length: STATIC_COUNT }, (_, i) => {
+    const radius = 50 + Math.random() * 30;
+    const dur = 1.5 + Math.random() * 2;
+    const size = 2 + Math.random() * 3;
+    const startAngle = (360 / STATIC_COUNT) * i;
+    const color = Math.random() > 0.4 ? '#00f2ff' : '#9d00ff';
+
+    return (
+      <div
+        key={i}
+        className="static-particle"
+        style={{
+          width: size,
+          height: size,
+          backgroundColor: color,
+          boxShadow: `0 0 4px 1px ${color}`,
+          '--sp-radius': `${radius}px`,
+          '--sp-dur': `${dur}s`,
+          transform: `rotate(${startAngle}deg)`,
+        } as React.CSSProperties}
+      />
+    );
+  });
+  return <>{particles}</>;
+}
+
+function LightningTransition({ onComplete }: { onComplete: () => void }) {
+  const [phase, setPhase] = useState<'shake' | 'flashes' | 'reveal'>('shake');
+  const [flashCount, setFlashCount] = useState(0);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase('flashes'), 500);
+    const t2 = setTimeout(() => setFlashCount(1), 600);
+    const t3 = setTimeout(() => setFlashCount(2), 750);
+    const t4 = setTimeout(() => setFlashCount(3), 900);
+    const t5 = setTimeout(() => setFlashCount(4), 1050);
+    const t6 = setTimeout(() => setFlashCount(5), 1200);
+    const t7 = setTimeout(() => setPhase('reveal'), 1400);
+    const t8 = setTimeout(() => onComplete(), 2800);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5); clearTimeout(t6); clearTimeout(t7); clearTimeout(t8); };
+  }, [onComplete]);
+
+  const boltPaths = [
+    'M50,0 L48,15 L55,18 L47,35 L54,38 L42,60 L50,55 L38,80',
+    'M30,0 L33,20 L26,24 L34,45 L27,48 L36,70',
+    'M70,0 L67,18 L74,22 L66,40 L73,44 L64,65',
+  ];
+
+  return (
+    <div
+      className={`fixed inset-0 z-[10000] overflow-hidden ${phase === 'shake' ? 'screen-shake' : ''}`}
+      style={{ backgroundColor: phase === 'reveal' ? '#1a0633' : '#000' }}
+      data-testid="lightning-overlay"
+    >
+      {phase === 'flashes' && (
+        <>
+          {Array.from({ length: flashCount }, (_, i) => (
+            <div
+              key={i}
+              className="lightning-flash"
+              style={{ animationDelay: `${i * 0.05}s` }}
+            />
+          ))}
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {boltPaths.map((d, i) => (
+              <path
+                key={i}
+                d={d}
+                stroke="#00f2ff"
+                strokeWidth="2"
+                fill="none"
+                opacity={flashCount > i ? 1 : 0}
+                filter="drop-shadow(0 0 8px rgba(0, 242, 255, 0.9))"
+              />
+            ))}
+          </svg>
+        </>
+      )}
+
+      {phase === 'reveal' && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: '#1a0633' }}>
+          <div className="relative">
+            <StaticParticles />
+            <img
+              src={lightningTrimBoy}
+              alt="Lightning TrimBoy"
+              className="w-32 h-auto pixelated storm-sprite-fadein relative z-10"
+              style={{ imageRendering: 'pixelated' }}
+              data-testid="img-evolution-storm-sprite"
+            />
+            <div
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              style={{
+                filter: 'drop-shadow(0 0 20px rgba(0, 242, 255, 0.6))',
+              }}
+            />
+          </div>
+          <p
+            className="evolution-text text-[10px] uppercase tracking-widest mt-4"
+            style={{
+              color: '#00f2ff',
+              fontFamily: "'Press Start 2P', monospace",
+              animationDelay: '0.3s',
+              textShadow: '0 0 8px rgba(0, 242, 255, 0.8), 0 0 16px rgba(157, 0, 255, 0.4)',
+            }}
+          >
+            LIGHTNING EDITION
+          </p>
+          <p
+            className="evolution-text text-[7px] uppercase tracking-widest mt-2"
+            style={{
+              color: '#9d00ff',
+              fontFamily: "'Press Start 2P', monospace",
+              animationDelay: '0.6s',
+              textShadow: '0 0 6px rgba(157, 0, 255, 0.6)',
+            }}
+          >
+            STORM MODE ACTIVATED
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface EvolutionOverlayProps {
   onEvolutionComplete: (tier: EvolutionTier) => void;
 }
 
 export function EvolutionOverlay({ onEvolutionComplete }: EvolutionOverlayProps) {
   const [activeTier, setActiveTier] = useState<EvolutionTier>('NONE');
-  const [phase, setPhase] = useState<'idle' | 'fireworks' | 'fireworks_text' | 'flame' | 'done'>('idle');
-  const { playFireworksBurst, playFlameRoar, playGoldenChime, initAudio } = useAudio();
+  const [phase, setPhase] = useState<'idle' | 'fireworks' | 'fireworks_text' | 'flame' | 'lightning' | 'done'>('idle');
+  const { playFireworksBurst, playFlameRoar, playGoldenChime, playThunderclap, playStormChime, initAudio } = useAudio();
   const hasStarted = useRef(false);
 
   useEffect(() => {
@@ -178,8 +310,11 @@ export function EvolutionOverlay({ onEvolutionComplete }: EvolutionOverlayProps)
     } else if (tier === 'GOLD_UNLOCK') {
       setPhase('flame');
       playFlameRoar();
+    } else if (tier === 'LIGHTNING_UNLOCK') {
+      setPhase('lightning');
+      playThunderclap();
     }
-  }, [initAudio, playFireworksBurst, playFlameRoar]);
+  }, [initAudio, playFireworksBurst, playFlameRoar, playThunderclap]);
 
   const handleFireworksComplete = useCallback(() => {
     setPhase('fireworks_text');
@@ -189,7 +324,7 @@ export function EvolutionOverlay({ onEvolutionComplete }: EvolutionOverlayProps)
 
     const root = document.getElementById('app-root');
     if (root) {
-      root.classList.remove('theme-classic', 'theme-color', 'theme-gold');
+      root.classList.remove('theme-classic', 'theme-color', 'theme-gold', 'theme-storm');
       root.classList.add('theme-color');
       localStorage.setItem('trim_hardware_theme', 'color');
     }
@@ -211,6 +346,26 @@ export function EvolutionOverlay({ onEvolutionComplete }: EvolutionOverlayProps)
       onEvolutionComplete(activeTier);
     }, 800);
   }, [onEvolutionComplete, activeTier, playGoldenChime]);
+
+  const handleLightningComplete = useCallback(() => {
+    setLightningUnlocked();
+    setLightningAnnounced();
+    setLightningAnnouncedThisSession();
+    logEvolutionEvent('LIGHTNING_UNLOCK');
+    playStormChime();
+
+    const root = document.getElementById("app-root");
+    if (root) {
+      root.classList.remove("theme-classic", "theme-color", "theme-gold");
+      root.classList.add("theme-storm");
+      localStorage.setItem("trim_hardware_theme", "storm");
+    }
+
+    setTimeout(() => {
+      setPhase('done');
+      onEvolutionComplete(activeTier);
+    }, 800);
+  }, [onEvolutionComplete, activeTier, playStormChime]);
 
   if (phase === 'idle' || phase === 'done') return null;
 
@@ -260,6 +415,10 @@ export function EvolutionOverlay({ onEvolutionComplete }: EvolutionOverlayProps)
 
       {phase === 'flame' && (
         <FlameTransition onComplete={handleFlameComplete} />
+      )}
+
+      {phase === 'lightning' && (
+        <LightningTransition onComplete={handleLightningComplete} />
       )}
     </>
   );

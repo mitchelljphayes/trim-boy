@@ -268,5 +268,103 @@ export function useAudio() {
     crackle.stop(now + 1.2);
   }, [initAudio]);
 
-  return { playHighBeep, playLowBlip, playStartupSound, playCelebratoryIdent, playGentleIdent, playInhaleSweep, playExhaleSweep, playHoldChime, playGoldenChime, playFireworksBurst, playFlameRoar, initAudio, setMuted };
+  const playThunderclap = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const crack = ctx.createOscillator();
+    const crackGain = ctx.createGain();
+    crack.type = 'sawtooth';
+    crack.frequency.setValueAtTime(3000, now);
+    crack.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+    crackGain.gain.setValueAtTime(0.15, now);
+    crackGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+    crack.connect(crackGain);
+    crackGain.connect(ctx.destination);
+    crack.start(now);
+    crack.stop(now + 0.2);
+
+    const rumble = ctx.createOscillator();
+    const rumbleGain = ctx.createGain();
+    rumble.type = 'sawtooth';
+    rumble.frequency.setValueAtTime(80, now + 0.1);
+    rumble.frequency.linearRampToValueAtTime(30, now + 1.5);
+    rumbleGain.gain.setValueAtTime(0.08, now + 0.1);
+    rumbleGain.gain.linearRampToValueAtTime(0.12, now + 0.3);
+    rumbleGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+    rumble.connect(rumbleGain);
+    rumbleGain.connect(ctx.destination);
+    rumble.start(now + 0.1);
+    rumble.stop(now + 1.5);
+
+    const echo1 = ctx.createOscillator();
+    const echo1Gain = ctx.createGain();
+    echo1.type = 'square';
+    echo1.frequency.setValueAtTime(200, now + 0.3);
+    echo1.frequency.exponentialRampToValueAtTime(60, now + 0.8);
+    echo1Gain.gain.setValueAtTime(0.05, now + 0.3);
+    echo1Gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.0);
+    echo1.connect(echo1Gain);
+    echo1Gain.connect(ctx.destination);
+    echo1.start(now + 0.3);
+    echo1.stop(now + 1.0);
+
+    const echo2 = ctx.createOscillator();
+    const echo2Gain = ctx.createGain();
+    echo2.type = 'square';
+    echo2.frequency.setValueAtTime(150, now + 0.6);
+    echo2.frequency.exponentialRampToValueAtTime(40, now + 1.2);
+    echo2Gain.gain.setValueAtTime(0.03, now + 0.6);
+    echo2Gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.3);
+    echo2.connect(echo2Gain);
+    echo2Gain.connect(ctx.destination);
+    echo2.start(now + 0.6);
+    echo2.stop(now + 1.3);
+  }, [initAudio]);
+
+  const playStormChime = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const notes = [
+      { freq: 1046.5, time: 0, dur: 0.25 },
+      { freq: 1396.9, time: 0.12, dur: 0.25 },
+      { freq: 1760, time: 0.24, dur: 0.35 },
+      { freq: 2093, time: 0.4, dur: 0.5 },
+      { freq: 2637, time: 0.6, dur: 0.7 },
+    ];
+
+    notes.forEach(({ freq, time, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, now + time);
+      gain.gain.setValueAtTime(0.06, now + time);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + time + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + time);
+      osc.stop(now + time + dur);
+    });
+
+    const shimmer = ctx.createOscillator();
+    const shimGain = ctx.createGain();
+    shimmer.type = 'sine';
+    shimmer.frequency.setValueAtTime(3520, now + 0.7);
+    shimmer.frequency.linearRampToValueAtTime(4186, now + 1.5);
+    shimGain.gain.setValueAtTime(0.04, now + 0.7);
+    shimGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.0);
+    shimmer.connect(shimGain);
+    shimGain.connect(ctx.destination);
+    shimmer.start(now + 0.7);
+    shimmer.stop(now + 2.0);
+  }, [initAudio]);
+
+  return { playHighBeep, playLowBlip, playStartupSound, playCelebratoryIdent, playGentleIdent, playInhaleSweep, playExhaleSweep, playHoldChime, playGoldenChime, playFireworksBurst, playFlameRoar, playThunderclap, playStormChime, initAudio, setMuted };
 }

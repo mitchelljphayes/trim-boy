@@ -23,6 +23,7 @@ import Recharge from "@/pages/Recharge";
 import Yoga from "@/pages/Yoga";
 import Archive from "@/pages/Archive";
 import { LCDOverlay } from "@/components/LCDOverlay";
+import { StormBackground } from "@/components/StormBackground";
 import { getStreak, isGbcUnlocked } from "@/lib/streakManager";
 
 function Router() {
@@ -56,13 +57,18 @@ function Router() {
 }
 
 function App() {
-  const [isGold, setIsGold] = useState(false);
+  const [activeTheme, setActiveTheme] = useState("classic");
 
   useEffect(() => {
     const root = document.getElementById("app-root");
     if (!root) return;
     let saved = localStorage.getItem("trim_hardware_theme") || "classic";
-    if (saved === "gold" && getStreak() < 2) {
+    const streak = getStreak();
+    if (saved === "storm" && streak < 5) {
+      saved = streak >= 2 ? "gold" : isGbcUnlocked() ? "color" : "classic";
+      localStorage.setItem("trim_hardware_theme", saved);
+    }
+    if (saved === "gold" && streak < 2) {
       saved = isGbcUnlocked() ? "color" : "classic";
       localStorage.setItem("trim_hardware_theme", saved);
     }
@@ -71,13 +77,18 @@ function App() {
       localStorage.setItem("trim_hardware_theme", saved);
     }
     root.classList.add(`theme-${saved}`);
-    setIsGold(saved === "gold");
+    setActiveTheme(saved);
   }, []);
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const root = document.getElementById("app-root");
-      if (root) setIsGold(root.classList.contains("theme-gold"));
+      if (root) {
+        if (root.classList.contains("theme-storm")) setActiveTheme("storm");
+        else if (root.classList.contains("theme-gold")) setActiveTheme("gold");
+        else if (root.classList.contains("theme-color")) setActiveTheme("color");
+        else setActiveTheme("classic");
+      }
     });
     const root = document.getElementById("app-root");
     if (root) observer.observe(root, { attributes: true, attributeFilter: ["class"] });
@@ -112,9 +123,15 @@ function App() {
           <Router />
         </div>
         <LCDOverlay />
-        {isGold && (
+        {activeTheme === "storm" && <StormBackground />}
+        {activeTheme === "gold" && (
           <span className="gold-edition-badge" data-testid="text-gold-edition">
             GOLD EDITION
+          </span>
+        )}
+        {activeTheme === "storm" && (
+          <span className="storm-edition-badge" data-testid="text-storm-edition">
+            LIGHTNING EDITION
           </span>
         )}
       </QueryClientProvider>

@@ -88,7 +88,9 @@ All API routes are defined as objects with `method`, `path`, `input` (Zod schema
 - **Tier 2 (Gold Mode Unlock)**: Triggers at streak >= 2. Flame engulf transition → golden UI reveal with golden TrimBoy sprite. Applies `theme-gold`. Session-gated via sessionStorage `trim_gold_announced_session`.
 - **EvolutionOverlay** (`components/EvolutionOverlay.tsx`): Orchestrates the full visual sequence with fireworks, GBC reveal, flame transition, and gold reveal.
 - **HardwareToggle**: GBC mode only available after `isGbcUnlocked()`, Gold only when streak >= 2.
-- **Evolution Events**: Logged as milestones (GBC_UNLOCK, GOLD_UNLOCK) and displayed in Archive's Evolution Timeline section.
+- **Tier 3 (Lightning Edition)**: Triggers at streak >= 5. Screen shake + rapid lightning flashes → Lightning TrimBoy reveal with orbiting static electricity particles and cyan glowing eyes. Applies `theme-storm`. Persisted via `trim_lightning_unlocked` and `trim_lightning_announced` in localStorage, session-gated via `trim_lightning_announced_session`.
+- **StormBackground** (`components/StormBackground.tsx`): Global atmospheric component rendering random lightning flashes (every 5-10s) and 8-bit SVG lightning bolts behind UI.
+- **Evolution Events**: Logged as milestones (GBC_UNLOCK, GOLD_UNLOCK, LIGHTNING_UNLOCK) and displayed in Archive's Evolution Timeline section.
 
 ### No External Auth
 Authentication is not implemented. User identity is based on a simple name lookup stored in localStorage on the client side.

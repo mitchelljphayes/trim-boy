@@ -145,6 +145,12 @@ const EVOLUTION_LABELS: Record<string, { title: string; icon: string; color: str
     color: '#FFD700',
     bgColor: '#2d1b33',
   },
+  LIGHTNING_UNLOCK: {
+    title: 'LIGHTNING EDITION',
+    icon: '[ZAP]',
+    color: '#00f2ff',
+    bgColor: '#1a0633',
+  },
 };
 
 function EvolutionTimeline({ events }: { events: Milestone[] }) {
@@ -290,7 +296,7 @@ export default function Archive() {
   const totalMastery = getTotalMastery();
   const showHallOfFame = hasEverReachedGold();
   const goldWeeks = getGoldWeekIds();
-  const evolutionEvents = milestones.filter(m => m.achievement === 'GBC_UNLOCK' || m.achievement === 'GOLD_UNLOCK')
+  const evolutionEvents = milestones.filter(m => m.achievement === 'GBC_UNLOCK' || m.achievement === 'GOLD_UNLOCK' || m.achievement === 'LIGHTNING_UNLOCK')
     .sort((a, b) => a.date.localeCompare(b.date));
 
   const filteredLogs = logs

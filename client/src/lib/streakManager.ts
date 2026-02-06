@@ -8,6 +8,9 @@ const MASTERY_COUNT_KEY = 'trim_mastery_total';
 const GBC_UNLOCKED_KEY = 'trim_gbc_unlocked';
 const GBC_ANNOUNCED_KEY = 'trim_gbc_announced';
 const GOLD_ANNOUNCED_KEY = 'trim_gold_announced_session';
+const LIGHTNING_UNLOCKED_KEY = 'trim_lightning_unlocked';
+const LIGHTNING_ANNOUNCED_KEY = 'trim_lightning_announced';
+const LIGHTNING_ANNOUNCED_SESSION_KEY = 'trim_lightning_announced_session';
 
 export interface Milestone {
   date: string;
@@ -16,7 +19,7 @@ export interface Milestone {
   weekId: string;
 }
 
-export type EvolutionTier = 'NONE' | 'GBC_UNLOCK' | 'GOLD_UNLOCK';
+export type EvolutionTier = 'NONE' | 'GBC_UNLOCK' | 'GOLD_UNLOCK' | 'LIGHTNING_UNLOCK';
 
 function getCurrentWeekId(): string {
   return format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -88,8 +91,39 @@ export function setGoldAnnouncedThisSession() {
   sessionStorage.setItem(GOLD_ANNOUNCED_KEY, 'true');
 }
 
+export function isLightningUnlocked(): boolean {
+  return localStorage.getItem(LIGHTNING_UNLOCKED_KEY) === 'true';
+}
+
+export function setLightningUnlocked() {
+  localStorage.setItem(LIGHTNING_UNLOCKED_KEY, 'true');
+}
+
+export function isLightningAnnounced(): boolean {
+  return localStorage.getItem(LIGHTNING_ANNOUNCED_KEY) === 'true';
+}
+
+export function setLightningAnnounced() {
+  localStorage.setItem(LIGHTNING_ANNOUNCED_KEY, 'true');
+}
+
+export function isLightningAnnouncedThisSession(): boolean {
+  return sessionStorage.getItem(LIGHTNING_ANNOUNCED_SESSION_KEY) === 'true';
+}
+
+export function setLightningAnnouncedThisSession() {
+  sessionStorage.setItem(LIGHTNING_ANNOUNCED_SESSION_KEY, 'true');
+}
+
 export function getEvolutionTier(): EvolutionTier {
   const streak = getStreak();
+
+  if (streak >= 5 && !isLightningAnnouncedThisSession()) {
+    if (!isLightningAnnounced()) {
+      return 'LIGHTNING_UNLOCK';
+    }
+    return 'LIGHTNING_UNLOCK';
+  }
 
   if (streak >= 2 && !isGoldAnnouncedThisSession()) {
     if (!isGbcAnnounced()) {
@@ -105,7 +139,7 @@ export function getEvolutionTier(): EvolutionTier {
   return 'NONE';
 }
 
-export function logEvolutionEvent(achievement: 'GBC_UNLOCK' | 'GOLD_UNLOCK') {
+export function logEvolutionEvent(achievement: 'GBC_UNLOCK' | 'GOLD_UNLOCK' | 'LIGHTNING_UNLOCK') {
   const milestones = getMilestones();
   const weekId = getCurrentWeekId();
 
@@ -117,7 +151,7 @@ export function logEvolutionEvent(achievement: 'GBC_UNLOCK' | 'GOLD_UNLOCK') {
   milestones.push({
     date: new Date().toISOString(),
     achievement,
-    status: achievement === 'GBC_UNLOCK' ? 'HARDWARE EVOLVED' : 'GOLD ACTIVATED',
+    status: achievement === 'GBC_UNLOCK' ? 'HARDWARE EVOLVED' : achievement === 'LIGHTNING_UNLOCK' ? 'STORM ACTIVATED' : 'GOLD ACTIVATED',
     weekId,
   });
   localStorage.setItem(MILESTONES_KEY, JSON.stringify(milestones));
