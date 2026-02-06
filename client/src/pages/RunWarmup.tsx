@@ -1,17 +1,13 @@
-import TimerPage, { type Step } from '@/components/TimerPage';
-
-const STEPS: Step[] = [
-  { label: 'GET READY', duration: 5, type: 'intro' },
-  { label: 'Ankle Circles & Toe Taps', duration: 60, type: 'work' },
-  { label: 'High Knees (Marching pace)', duration: 60, type: 'work' },
-  { label: 'Standing Quad Stretches (Dynamic)', duration: 60, type: 'work' },
-];
+import TimerPage from '@/components/TimerPage';
 
 export default function RunWarmup() {
   return (
     <TimerPage
       title="RUN WARM-UP"
-      steps={STEPS}
+      exercises={['Ankle Circles & Toe Taps', 'High Knees (Marching pace)', 'Standing Quad Stretches (Dynamic)']}
+      workDuration={60}
+      restDuration={0}
+      rounds={1}
       category="run_warmup"
       skipLog
       redirectTo="/running"

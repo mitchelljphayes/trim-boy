@@ -1,17 +1,13 @@
-import TimerPage, { type Step } from '@/components/TimerPage';
-
-const STEPS: Step[] = [
-  { label: 'GET READY', duration: 5, type: 'intro' },
-  { label: "Child's Pose (Shoulder focus)", duration: 120, type: 'work' },
-  { label: 'Thread the Needle (Both sides)', duration: 90, type: 'work' },
-  { label: 'Deep Forward Fold', duration: 90, type: 'work' },
-];
+import TimerPage from '@/components/TimerPage';
 
 export default function SurfCooldown() {
   return (
     <TimerPage
       title="SURF COOL-DOWN"
-      steps={STEPS}
+      exercises={["Child's Pose (Shoulder focus)", 'Thread the Needle (Both sides)', 'Deep Forward Fold']}
+      workDuration={100}
+      restDuration={0}
+      rounds={1}
       category="surf_cooldown"
       skipLog
       redirectTo="/surfing"
