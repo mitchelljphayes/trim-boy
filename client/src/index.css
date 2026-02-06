@@ -32,7 +32,6 @@
   --gb-light: 88 47% 53%;     /* #8bac0f */
   --gb-dark: 120 34% 28%;     /* #306230 */
   --gb-darkest: 120 57% 14%;  /* #0f380f */
-  filter: contrast(1.1) brightness(1.1);
 }
 
 
