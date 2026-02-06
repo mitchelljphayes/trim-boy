@@ -128,7 +128,18 @@ export default function Dashboard() {
             5. BREATHWORK
           </RetroButton>
 
-          <div className="pt-4 border-t-4 border-[hsl(var(--gb-dark))]/20 border-dashed space-y-2">
+          <div className="pt-4 border-t-4 border-[hsl(var(--gb-dark))]/20 border-dashed space-y-3">
+            <RetroButton
+              onClick={() => setLocation('/yoga')}
+              fullWidth
+              disabled={isPending}
+              style={yogaStar ? { background: '#8B7300', color: '#FFF3C4', borderColor: '#FFD700' } : undefined}
+              data-testid="button-yoga"
+            >
+              BONUS: ASHTANGA FLOW
+              {yogaStar && <span className="text-[8px] ml-1" style={{ color: '#FFD700' }}>COMPLETED</span>}
+            </RetroButton>
+
             <RetroButton 
               onClick={() => setLocation('/recharge')} 
               fullWidth 
@@ -154,19 +165,6 @@ export default function Dashboard() {
                 [ OVERRIDE RECHARGE ]
               </button>
             )}
-          </div>
-
-          <div className="pt-2">
-            <RetroButton
-              onClick={() => setLocation('/yoga')}
-              fullWidth
-              disabled={isPending}
-              style={yogaStar ? { background: '#8B7300', color: '#FFF3C4', borderColor: '#FFD700' } : undefined}
-              data-testid="button-yoga"
-            >
-              BONUS: ASHTANGA FLOW
-              {yogaStar && <span className="text-[8px] ml-1" style={{ color: '#FFD700' }}>COMPLETED</span>}
-            </RetroButton>
           </div>
         </div>
 
