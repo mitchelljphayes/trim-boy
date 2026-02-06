@@ -140,7 +140,7 @@ export default function TimerPage({ title, steps, category, skipLog, redirectTo 
           START ROUTINE
         </RetroButton>
         <button
-          onClick={() => setLocation('/dashboard')}
+          onClick={() => setLocation(redirectTo || '/dashboard')}
           className="mt-6 flex items-center gap-2 text-[hsl(var(--gb-dark))] text-xs"
           data-testid="button-back"
         >

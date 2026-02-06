@@ -44,10 +44,11 @@ export function useCreateLog() {
   return useMutation({
     mutationFn: async ({ category, date, metadata }: { category: string; date: Date; metadata?: Record<string, unknown> }) => {
       const formattedDate = format(date, "yyyy-MM-dd");
+      const userId = parseInt(localStorage.getItem("trim_user_id") || "0");
       const res = await fetch(api.logs.create.path, {
         method: api.logs.create.method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category, date: formattedDate, metadata }),
+        body: JSON.stringify({ userId, category, date: formattedDate, metadata }),
       });
 
       if (!res.ok) throw new Error("Failed to log activity");
