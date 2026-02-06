@@ -1,21 +1,38 @@
+import TimerPage, { type Step } from '@/components/TimerPage';
 
-import TimerPage from '@/components/TimerPage';
+const EXERCISES = ['Pop-ups', 'Superman Holds', 'Rotational Lunges', 'Plank Shoulder Taps', 'Bird-Dog'];
 
-const STRENGTH_A = [
-  { name: 'Pop-ups', duration: 45 },
-  { name: 'Superman Holds', duration: 45 },
-  { name: 'Rotational Lunges', duration: 45 },
-  { name: 'Plank Shoulder Taps', duration: 45 },
-  { name: 'Bird-Dog', duration: 45 },
-];
+function buildStrengthSteps(exercises: string[], rounds: number): Step[] {
+  const steps: Step[] = [];
+
+  steps.push({ label: 'GET READY', duration: 5, type: 'intro' });
+
+  steps.push({ label: 'Warm-up: Mobility Flow', duration: 120, type: 'warmup' });
+
+  for (let r = 1; r <= rounds; r++) {
+    exercises.forEach((ex, i) => {
+      steps.push({ label: `R${r}: ${ex}`, duration: 45, type: 'work' });
+      const isLast = r === rounds && i === exercises.length - 1;
+      if (!isLast) {
+        const nextEx = i < exercises.length - 1 ? exercises[i + 1] : exercises[0];
+        steps.push({ label: `Rest - Up next: ${nextEx}`, duration: 15, type: 'rest' });
+      }
+    });
+  }
+
+  steps.push({ label: 'Cool-down: Savasana', duration: 180, type: 'cooldown' });
+
+  return steps;
+}
+
+const STEPS = buildStrengthSteps(EXERCISES, 3);
 
 export default function StrengthA() {
   return (
-    <TimerPage 
-      title="STRENGTH ROUTINE A" 
-      exercises={STRENGTH_A} 
-      rounds={3} 
-      category="strength" 
+    <TimerPage
+      title="STRENGTH ROUTINE A"
+      steps={STEPS}
+      category="strength"
     />
   );
 }
