@@ -188,5 +188,85 @@ export function useAudio() {
     shimmer.stop(now + 2.0);
   }, [initAudio]);
 
-  return { playHighBeep, playLowBlip, playStartupSound, playCelebratoryIdent, playGentleIdent, playInhaleSweep, playExhaleSweep, playHoldChime, playGoldenChime, initAudio, setMuted };
+  const playFireworksBurst = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const bursts = [
+      { freq: 200, time: 0, dur: 0.15 },
+      { freq: 600, time: 0.1, dur: 0.2 },
+      { freq: 1200, time: 0.2, dur: 0.15 },
+      { freq: 800, time: 0.35, dur: 0.2 },
+      { freq: 1600, time: 0.45, dur: 0.15 },
+      { freq: 400, time: 0.55, dur: 0.25 },
+      { freq: 2000, time: 0.7, dur: 0.3 },
+      { freq: 1000, time: 0.9, dur: 0.2 },
+    ];
+
+    bursts.forEach(({ freq, time, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, now + time);
+      osc.frequency.linearRampToValueAtTime(freq * 0.5, now + time + dur);
+      gain.gain.setValueAtTime(0.08, now + time);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + time + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + time);
+      osc.stop(now + time + dur);
+    });
+
+    const noise = ctx.createOscillator();
+    const noiseGain = ctx.createGain();
+    noise.type = 'sawtooth';
+    noise.frequency.setValueAtTime(100, now + 0.8);
+    noise.frequency.linearRampToValueAtTime(3000, now + 1.2);
+    noiseGain.gain.setValueAtTime(0.04, now + 0.8);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+    noise.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noise.start(now + 0.8);
+    noise.stop(now + 1.5);
+  }, [initAudio]);
+
+  const playFlameRoar = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const rumble = ctx.createOscillator();
+    const rumbleGain = ctx.createGain();
+    rumble.type = 'sawtooth';
+    rumble.frequency.setValueAtTime(60, now);
+    rumble.frequency.linearRampToValueAtTime(120, now + 0.5);
+    rumble.frequency.linearRampToValueAtTime(40, now + 1.5);
+    rumbleGain.gain.setValueAtTime(0.06, now);
+    rumbleGain.gain.linearRampToValueAtTime(0.1, now + 0.3);
+    rumbleGain.gain.linearRampToValueAtTime(0.08, now + 0.8);
+    rumbleGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+    rumble.connect(rumbleGain);
+    rumbleGain.connect(ctx.destination);
+    rumble.start(now);
+    rumble.stop(now + 1.5);
+
+    const crackle = ctx.createOscillator();
+    const crackleGain = ctx.createGain();
+    crackle.type = 'square';
+    crackle.frequency.setValueAtTime(800, now + 0.2);
+    crackle.frequency.exponentialRampToValueAtTime(200, now + 1.0);
+    crackleGain.gain.setValueAtTime(0.04, now + 0.2);
+    crackleGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+    crackle.connect(crackleGain);
+    crackleGain.connect(ctx.destination);
+    crackle.start(now + 0.2);
+    crackle.stop(now + 1.2);
+  }, [initAudio]);
+
+  return { playHighBeep, playLowBlip, playStartupSound, playCelebratoryIdent, playGentleIdent, playInhaleSweep, playExhaleSweep, playHoldChime, playGoldenChime, playFireworksBurst, playFlameRoar, initAudio, setMuted };
 }

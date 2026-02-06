@@ -132,6 +132,72 @@ function RunDetail({ meta }: { meta: Record<string, unknown> }) {
   );
 }
 
+const EVOLUTION_LABELS: Record<string, { title: string; icon: string; color: string; bgColor: string }> = {
+  GBC_UNLOCK: {
+    title: 'GBC COLOR UNLOCKED',
+    icon: '[EVO]',
+    color: '#33CC33',
+    bgColor: '#0a1a0a',
+  },
+  GOLD_UNLOCK: {
+    title: 'GOLD MODE ACTIVATED',
+    icon: '[EVO]',
+    color: '#FFD700',
+    bgColor: '#2d1b33',
+  },
+};
+
+function EvolutionTimeline({ events }: { events: Milestone[] }) {
+  return (
+    <div className="mb-6 border-4 border-[hsl(var(--gb-dark))] p-3" data-testid="evolution-timeline">
+      <h3 className="text-[9px] font-bold text-[hsl(var(--gb-darkest))] tracking-widest mb-3 text-center">
+        EVOLUTION EVENTS
+      </h3>
+      <div className="space-y-2">
+        {events.map((ev, i) => {
+          const info = EVOLUTION_LABELS[ev.achievement] || {
+            title: ev.achievement,
+            icon: '[EVT]',
+            color: '#9bbc0f',
+            bgColor: '#0f380f',
+          };
+          const date = new Date(ev.date);
+          return (
+            <div
+              key={i}
+              className="flex items-center gap-3 p-2 border-2"
+              style={{ borderColor: info.color, backgroundColor: info.bgColor }}
+              data-testid={`evolution-event-${i}`}
+            >
+              <div className="flex-shrink-0">
+                <span className="text-[10px] font-bold" style={{ color: info.color }}>
+                  {info.icon}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[8px] font-bold uppercase tracking-wider" style={{ color: info.color }}>
+                  {info.title}
+                </p>
+                <p className="text-[7px] uppercase tracking-widest mt-[2px]" style={{ color: info.color, opacity: 0.6 }}>
+                  {ev.status}
+                </p>
+              </div>
+              <div className="flex-shrink-0 text-right">
+                <p className="text-[7px]" style={{ color: info.color, opacity: 0.7 }}>
+                  {format(date, "MM/dd/yy")}
+                </p>
+                <p className="text-[6px]" style={{ color: info.color, opacity: 0.5 }}>
+                  {format(date, "HH:mm")}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function HallOfFame({ milestones, totalMastery }: { milestones: Milestone[]; totalMastery: number }) {
   const goldMilestones = milestones.filter(m => m.achievement === 'GOLD_STATUS');
 
@@ -224,6 +290,8 @@ export default function Archive() {
   const totalMastery = getTotalMastery();
   const showHallOfFame = hasEverReachedGold();
   const goldWeeks = getGoldWeekIds();
+  const evolutionEvents = milestones.filter(m => m.achievement === 'GBC_UNLOCK' || m.achievement === 'GOLD_UNLOCK')
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   const filteredLogs = logs
     ? (filter === 'all' ? logs : logs.filter((l) => l.category === filter)) as LogEntry[]
@@ -255,6 +323,10 @@ export default function Archive() {
 
       {showHallOfFame && (
         <HallOfFame milestones={milestones} totalMastery={totalMastery} />
+      )}
+
+      {evolutionEvents.length > 0 && (
+        <EvolutionTimeline events={evolutionEvents} />
       )}
 
       <div className="flex flex-wrap gap-1 mb-4" data-testid="filter-bar">

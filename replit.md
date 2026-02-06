@@ -83,5 +83,12 @@ All API routes are defined as objects with `method`, `path`, `input` (Zod schema
 - **tailwindcss**: Utility-first CSS framework
 - **embla-carousel-react**, **recharts**, **vaul**, **react-day-picker**, **react-resizable-panels**, **react-hook-form**: Additional UI libraries (installed via shadcn/ui, not all actively used)
 
+### Tiered Visual Unlock System
+- **Tier 1 (GBC Color Unlock)**: Triggers at first 2-week streak. Fireworks particle overlay → GBC UNLOCKED text → CSS theme switched to `theme-color`. Persisted via `trim_gbc_unlocked` and `trim_gbc_announced` in localStorage.
+- **Tier 2 (Gold Mode Unlock)**: Triggers at streak >= 2. Flame engulf transition → golden UI reveal with golden TrimBoy sprite. Applies `theme-gold`. Session-gated via sessionStorage `trim_gold_announced_session`.
+- **EvolutionOverlay** (`components/EvolutionOverlay.tsx`): Orchestrates the full visual sequence with fireworks, GBC reveal, flame transition, and gold reveal.
+- **HardwareToggle**: GBC mode only available after `isGbcUnlocked()`, Gold only when streak >= 2.
+- **Evolution Events**: Logged as milestones (GBC_UNLOCK, GOLD_UNLOCK) and displayed in Archive's Evolution Timeline section.
+
 ### No External Auth
 Authentication is not implemented. User identity is based on a simple name lookup stored in localStorage on the client side.

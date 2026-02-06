@@ -1,8 +1,10 @@
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { useAudio } from '@/hooks/use-audio';
-import { getStreak } from '@/lib/streakManager';
+import { getStreak, getEvolutionTier, setGoldAnnouncedThisSession } from '@/lib/streakManager';
+import { EvolutionOverlay } from '@/components/EvolutionOverlay';
+import type { EvolutionTier } from '@/lib/streakManager';
 import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 import goldTrimBoy from "@assets/trimboy_gold_1770407871261.png";
 
@@ -70,28 +72,57 @@ export default function BootSequence() {
   const { playStartupSound, playGoldenChime, initAudio } = useAudio();
   const [started, setStarted] = useState(false);
   const [flashing, setFlashing] = useState(false);
-  const isGold = useRef(getStreak() >= 2);
+  const [showEvolution, setShowEvolution] = useState(false);
+  const streak = useRef(getStreak());
+  const evolutionTier = useRef(getEvolutionTier());
+  const isGold = useRef(streak.current >= 2);
   const transitionTimer = useRef<ReturnType<typeof setTimeout>>();
   const hasAutoStarted = useRef(false);
 
-  const goToDashboard = () => {
+  const goToDashboard = useCallback(() => {
     if (flashing) return;
     setFlashing(true);
     if (transitionTimer.current) clearTimeout(transitionTimer.current);
     setTimeout(() => setLocation('/dashboard'), 400);
-  };
+  }, [flashing, setLocation]);
+
+  const handleEvolutionComplete = useCallback((_tier: EvolutionTier) => {
+    setShowEvolution(false);
+    setGoldAnnouncedThisSession();
+
+    const root = document.getElementById('app-root');
+    if (root) {
+      root.classList.remove('theme-classic', 'theme-color', 'theme-gold');
+      root.classList.add('theme-gold');
+      localStorage.setItem('trim_hardware_theme', 'gold');
+    }
+    window.dispatchEvent(new Event('streak-update'));
+
+    setTimeout(() => setLocation('/dashboard'), 600);
+  }, [setLocation]);
 
   useEffect(() => {
-    if (isGold.current && !hasAutoStarted.current) {
+    if (hasAutoStarted.current) return;
+
+    if (evolutionTier.current !== 'NONE') {
+      hasAutoStarted.current = true;
+      initAudio();
+      setShowEvolution(true);
+      return;
+    }
+
+    if (isGold.current) {
       hasAutoStarted.current = true;
       initAudio();
       setStarted(true);
+      setGoldAnnouncedThisSession();
       playGoldenChime();
       transitionTimer.current = setTimeout(() => {
         setFlashing(true);
         setTimeout(() => setLocation('/dashboard'), 400);
       }, 4000);
     }
+
     return () => {
       if (transitionTimer.current) clearTimeout(transitionTimer.current);
     };
@@ -103,6 +134,12 @@ export default function BootSequence() {
     playStartupSound();
     setTimeout(() => setLocation('/dashboard'), 2500);
   };
+
+  if (showEvolution) {
+    return (
+      <EvolutionOverlay onEvolutionComplete={handleEvolutionComplete} />
+    );
+  }
 
   if (isGold.current) {
     return (

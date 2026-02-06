@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getStreak } from "@/lib/streakManager";
+import { getStreak, isGbcUnlocked } from "@/lib/streakManager";
 
 type HardwareTheme = "classic" | "color" | "gold";
 
@@ -52,14 +52,17 @@ export function HardwareToggle() {
   const [theme, setTheme] = useState<HardwareTheme>(() => {
     return (localStorage.getItem("trim_hardware_theme") as HardwareTheme) || "classic";
   });
+  const [gbcAvailable, setGbcAvailable] = useState(() => isGbcUnlocked());
   const [goldUnlocked, setGoldUnlocked] = useState(() => getStreak() >= 2);
 
   useEffect(() => {
     const handler = () => {
-      const unlocked = getStreak() >= 2;
-      setGoldUnlocked(unlocked);
-      if (!unlocked) {
-        setTheme(prev => prev === "gold" ? "classic" : prev);
+      const goldOk = getStreak() >= 2;
+      const gbcOk = isGbcUnlocked();
+      setGoldUnlocked(goldOk);
+      setGbcAvailable(gbcOk);
+      if (!goldOk) {
+        setTheme(prev => prev === "gold" ? (gbcOk ? "color" : "classic") : prev);
       }
     };
     window.addEventListener('streak-update', handler);
@@ -76,7 +79,12 @@ export function HardwareToggle() {
 
   const toggle = () => {
     setTheme((prev) => {
-      const available = goldUnlocked ? ALL_THEMES : ALL_THEMES.filter(t => t !== "gold");
+      let available = ALL_THEMES.filter(t => {
+        if (t === "gold" && !goldUnlocked) return false;
+        if (t === "color" && !gbcAvailable) return false;
+        return true;
+      });
+      if (available.length === 0) available = ["classic"];
       const idx = available.indexOf(prev);
       return available[(idx + 1) % available.length];
     });

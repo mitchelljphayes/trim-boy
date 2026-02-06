@@ -5,6 +5,9 @@ const STREAK_WEEK_KEY = 'trim_streak_week';
 const STREAK_CELEBRATED_KEY = 'trim_streak_celebrated';
 const MILESTONES_KEY = 'trim_milestones';
 const MASTERY_COUNT_KEY = 'trim_mastery_total';
+const GBC_UNLOCKED_KEY = 'trim_gbc_unlocked';
+const GBC_ANNOUNCED_KEY = 'trim_gbc_announced';
+const GOLD_ANNOUNCED_KEY = 'trim_gold_announced_session';
 
 export interface Milestone {
   date: string;
@@ -12,6 +15,8 @@ export interface Milestone {
   status: string;
   weekId: string;
 }
+
+export type EvolutionTier = 'NONE' | 'GBC_UNLOCK' | 'GOLD_UNLOCK';
 
 function getCurrentWeekId(): string {
   return format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -57,6 +62,65 @@ export function getGoldWeekIds(): Set<string> {
 
 export function hasEverReachedGold(): boolean {
   return getMilestones().some(m => m.achievement === 'GOLD_STATUS');
+}
+
+export function isGbcUnlocked(): boolean {
+  return localStorage.getItem(GBC_UNLOCKED_KEY) === 'true';
+}
+
+export function setGbcUnlocked() {
+  localStorage.setItem(GBC_UNLOCKED_KEY, 'true');
+}
+
+export function isGbcAnnounced(): boolean {
+  return localStorage.getItem(GBC_ANNOUNCED_KEY) === 'true';
+}
+
+export function setGbcAnnounced() {
+  localStorage.setItem(GBC_ANNOUNCED_KEY, 'true');
+}
+
+export function isGoldAnnouncedThisSession(): boolean {
+  return sessionStorage.getItem(GOLD_ANNOUNCED_KEY) === 'true';
+}
+
+export function setGoldAnnouncedThisSession() {
+  sessionStorage.setItem(GOLD_ANNOUNCED_KEY, 'true');
+}
+
+export function getEvolutionTier(): EvolutionTier {
+  const streak = getStreak();
+
+  if (streak >= 2 && !isGoldAnnouncedThisSession()) {
+    if (!isGbcAnnounced()) {
+      return 'GBC_UNLOCK';
+    }
+    return 'GOLD_UNLOCK';
+  }
+
+  if (streak === 2 && !isGbcAnnounced()) {
+    return 'GBC_UNLOCK';
+  }
+
+  return 'NONE';
+}
+
+export function logEvolutionEvent(achievement: 'GBC_UNLOCK' | 'GOLD_UNLOCK') {
+  const milestones = getMilestones();
+  const weekId = getCurrentWeekId();
+
+  const alreadyLogged = milestones.some(
+    m => m.weekId === weekId && m.achievement === achievement
+  );
+  if (alreadyLogged) return;
+
+  milestones.push({
+    date: new Date().toISOString(),
+    achievement,
+    status: achievement === 'GBC_UNLOCK' ? 'HARDWARE EVOLVED' : 'GOLD ACTIVATED',
+    weekId,
+  });
+  localStorage.setItem(MILESTONES_KEY, JSON.stringify(milestones));
 }
 
 function logMilestone(weekId: string) {

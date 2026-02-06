@@ -23,7 +23,7 @@ import Recharge from "@/pages/Recharge";
 import Yoga from "@/pages/Yoga";
 import Archive from "@/pages/Archive";
 import { LCDOverlay } from "@/components/LCDOverlay";
-import { getStreak } from "@/lib/streakManager";
+import { getStreak, isGbcUnlocked } from "@/lib/streakManager";
 
 function Router() {
   const [userName] = useState(() => localStorage.getItem("trim_user_name"));
@@ -63,6 +63,10 @@ function App() {
     if (!root) return;
     let saved = localStorage.getItem("trim_hardware_theme") || "classic";
     if (saved === "gold" && getStreak() < 2) {
+      saved = isGbcUnlocked() ? "color" : "classic";
+      localStorage.setItem("trim_hardware_theme", saved);
+    }
+    if (saved === "color" && !isGbcUnlocked()) {
       saved = "classic";
       localStorage.setItem("trim_hardware_theme", saved);
     }
