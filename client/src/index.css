@@ -35,13 +35,6 @@
   filter: contrast(1.1) brightness(1.1);
 }
 
-.theme-classic * {
-  transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out, border-color 0.1s ease-in-out, opacity 0.1s ease-in-out;
-}
-
-.theme-classic .lcd-ghosting {
-  filter: blur(0.4px);
-}
 
 .theme-color {
   --gb-lightest: 0 0% 90%;       /* pure light grey background */
