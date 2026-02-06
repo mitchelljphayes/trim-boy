@@ -71,7 +71,7 @@ export default function Dashboard() {
             Log Activity
           </h3>
           
-          <RetroButton onClick={() => handleLog('maint')} fullWidth disabled={isPending}>
+          <RetroButton onClick={() => setLocation('/maintenance')} fullWidth disabled={isPending}>
             1. DAILY MAINTENANCE
           </RetroButton>
 
@@ -79,9 +79,14 @@ export default function Dashboard() {
             2. RUNNING
           </RetroButton>
 
-          <RetroButton onClick={() => handleLog('strength')} fullWidth disabled={isPending}>
-            3. STRENGTH
-          </RetroButton>
+          <div className="grid grid-cols-2 gap-2">
+            <RetroButton onClick={() => setLocation('/strength-a')} fullWidth disabled={isPending}>
+              3A. STR. A
+            </RetroButton>
+            <RetroButton onClick={() => setLocation('/strength-b')} fullWidth disabled={isPending}>
+              3B. STR. B
+            </RetroButton>
+          </div>
 
           <RetroButton onClick={() => handleLog('surf')} fullWidth disabled={isPending}>
             4. SURFING
