@@ -59,6 +59,18 @@
   display: none;
 }
 
+.theme-classic img.pixelated,
+.theme-classic img[data-testid="img-briefing-sprite"],
+.theme-classic img[data-testid="img-trimboy-sprite"] {
+  filter: url(#dmg-palette);
+}
+
+.theme-color img.pixelated,
+.theme-color img[data-testid="img-briefing-sprite"],
+.theme-color img[data-testid="img-trimboy-sprite"] {
+  filter: none;
+}
+
 @layer base {
   body {
     @apply bg-[hsl(var(--gb-lightest))] text-[hsl(var(--gb-darkest))] antialiased selection:bg-[hsl(var(--gb-dark))] selection:text-[hsl(var(--gb-lightest))];

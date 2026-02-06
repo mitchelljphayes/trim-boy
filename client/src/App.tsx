@@ -64,6 +64,18 @@ function App() {
 
   return (
     <div id="app-root">
+      <svg className="absolute w-0 h-0" aria-hidden="true">
+        <defs>
+          <filter id="dmg-palette" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="saturate" values="0" />
+            <feComponentTransfer>
+              <feFuncR type="discrete" tableValues="0.059 0.188 0.545 0.608" />
+              <feFuncG type="discrete" tableValues="0.220 0.384 0.675 0.737" />
+              <feFuncB type="discrete" tableValues="0.059 0.188 0.059 0.059" />
+            </feComponentTransfer>
+          </filter>
+        </defs>
+      </svg>
       <QueryClientProvider client={queryClient}>
         <div className="lcd-ghosting">
           <Toaster />
