@@ -75,7 +75,7 @@ export default function Dashboard() {
             1. DAILY MAINTENANCE
           </RetroButton>
 
-          <RetroButton onClick={() => handleLog('run')} fullWidth disabled={isPending}>
+          <RetroButton onClick={() => setLocation('/running')} fullWidth disabled={isPending}>
             2. RUNNING
           </RetroButton>
 
@@ -88,7 +88,7 @@ export default function Dashboard() {
             </RetroButton>
           </div>
 
-          <RetroButton onClick={() => handleLog('surf')} fullWidth disabled={isPending}>
+          <RetroButton onClick={() => setLocation('/surfing')} fullWidth disabled={isPending}>
             4. SURFING
           </RetroButton>
 

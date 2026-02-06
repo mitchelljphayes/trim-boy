@@ -10,6 +10,14 @@ import BootSequence from "@/pages/BootSequence";
 import StrengthA from "@/pages/StrengthA";
 import StrengthB from "@/pages/StrengthB";
 import Maintenance from "@/pages/Maintenance";
+import SurfingMenu from "@/pages/SurfingMenu";
+import RunningMenu from "@/pages/RunningMenu";
+import SurfWarmup from "@/pages/SurfWarmup";
+import SurfCooldown from "@/pages/SurfCooldown";
+import SurfLog from "@/pages/SurfLog";
+import RunWarmup from "@/pages/RunWarmup";
+import RunCooldown from "@/pages/RunCooldown";
+import RunLog from "@/pages/RunLog";
 
 function Router() {
   const [userName] = useState(() => localStorage.getItem("trim_user_name"));
@@ -24,6 +32,14 @@ function Router() {
       <Route path="/strength-a" component={StrengthA} />
       <Route path="/strength-b" component={StrengthB} />
       <Route path="/maintenance" component={Maintenance} />
+      <Route path="/surfing" component={SurfingMenu} />
+      <Route path="/surf/warmup" component={SurfWarmup} />
+      <Route path="/surf/cooldown" component={SurfCooldown} />
+      <Route path="/surf/log" component={SurfLog} />
+      <Route path="/running" component={RunningMenu} />
+      <Route path="/run/warmup" component={RunWarmup} />
+      <Route path="/run/cooldown" component={RunCooldown} />
+      <Route path="/run/log" component={RunLog} />
       <Route component={NotFound} />
     </Switch>
   );

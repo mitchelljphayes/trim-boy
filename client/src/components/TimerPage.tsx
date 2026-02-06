@@ -15,9 +15,11 @@ interface RoutineProps {
   title: string;
   steps: Step[];
   category: string;
+  skipLog?: boolean;
+  redirectTo?: string;
 }
 
-export default function TimerPage({ title, steps, category }: RoutineProps) {
+export default function TimerPage({ title, steps, category, skipLog, redirectTo }: RoutineProps) {
   const [, setLocation] = useLocation();
   const { playHighBeep, playLowBlip, playCelebratoryIdent, playGentleIdent, initAudio, setMuted } = useAudio();
   const { mutate: logActivity } = useCreateLog();
@@ -69,8 +71,10 @@ export default function TimerPage({ title, steps, category }: RoutineProps) {
     if (nextIndex >= steps.length) {
       playGentleIdent();
       setComplete(true);
-      logActivity({ category, date: new Date() });
-      setTimeout(() => setLocation('/dashboard'), 3500);
+      if (!skipLog) {
+        logActivity({ category, date: new Date() });
+      }
+      setTimeout(() => setLocation(redirectTo || '/dashboard'), 3500);
       return;
     }
 
