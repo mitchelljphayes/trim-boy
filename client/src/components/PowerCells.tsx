@@ -33,26 +33,27 @@ export function PowerCells({ strengthCount, runCount }: PowerCellsProps) {
   return (
     <div className="w-full bg-[hsl(var(--gb-light))] p-4 border-4 border-[hsl(var(--gb-dark))] shadow-[4px_4px_0px_0px_hsl(var(--gb-dark))] mb-6">
       <h3 className="text-xs mb-3 text-[hsl(var(--gb-darkest))] uppercase tracking-widest">Weekly Mission</h3>
-      <div className="flex flex-col gap-4">
-        
-        {/* Strength Section */}
-        <div className="flex justify-between items-center">
-          <span className="text-[10px] uppercase font-bold">STR</span>
-          <div className="flex gap-1.5">
-            {renderCells(strengthCount, 4, <Zap size={16} fill="currentColor" />)}
+      
+      <div className="flex flex-col gap-2">
+        {/* All Cells in one line */}
+        <div className="flex justify-between items-center gap-1">
+          <div className="flex gap-1">
+            {renderCells(strengthCount, 4, <Zap size={14} fill="currentColor" />)}
+          </div>
+          <div className="flex gap-1">
+            {renderCells(runCount, 2, <Activity size={14} />)}
           </div>
         </div>
 
-        <div className="h-0.5 w-full bg-[hsl(var(--gb-dark))]/10 border-t-2 border-dotted border-[hsl(var(--gb-dark))]/20" />
-
-        {/* Run Section */}
-        <div className="flex justify-between items-center">
-          <span className="text-[10px] uppercase font-bold">RUN</span>
-          <div className="flex gap-1.5">
-            {renderCells(runCount, 2, <Activity size={16} />)}
+        {/* Labels below */}
+        <div className="flex justify-between items-center px-0.5 text-[9px] font-bold uppercase text-[hsl(var(--gb-dark))] tracking-tighter">
+          <div className="flex gap-1 w-[124px] justify-center">
+            <span>STR</span>
+          </div>
+          <div className="flex gap-1 w-[60px] justify-center">
+            <span>RUN</span>
           </div>
         </div>
-
       </div>
     </div>
   );
