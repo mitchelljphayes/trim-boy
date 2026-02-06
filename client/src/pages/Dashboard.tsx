@@ -147,7 +147,7 @@ export default function Dashboard() {
               className="retro-glow"
             >
               <span className="flex items-center gap-2">
-                <BatteryCharging size={16} className="led-blink" />
+                <BatteryCharging size={16} className={recharging ? "led-blink" : ""} />
                 RECHARGE
               </span>
             </RetroButton>
