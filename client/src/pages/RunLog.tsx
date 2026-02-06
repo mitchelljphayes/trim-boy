@@ -11,7 +11,8 @@ export default function RunLog() {
   const { mutate: logActivity, isPending } = useCreateLog();
 
   const [distance, setDistance] = useState('');
-  const [pace, setPace] = useState('');
+  const [paceMin, setPaceMin] = useState('');
+  const [paceSec, setPaceSec] = useState('');
   const [enjoyment, setEnjoyment] = useState(0);
 
   const handleSave = () => {
@@ -25,7 +26,7 @@ export default function RunLog() {
         date: new Date(),
         metadata: {
           distance: parseFloat(distance) || 0,
-          pace: pace,
+          pace: `${paceMin || '0'}:${(paceSec || '0').padStart(2, '0')}`,
           enjoyment: enjoyment,
         },
       },
@@ -72,14 +73,39 @@ export default function RunLog() {
           <label className="block text-[9px] text-[hsl(var(--gb-darkest))] uppercase tracking-widest mb-2">
             Pace (min/km)
           </label>
-          <input
-            type="text"
-            value={pace}
-            onChange={(e) => setPace(e.target.value)}
-            placeholder="5:30"
-            className="w-full py-3 px-4 bg-[hsl(var(--gb-light))] border-4 border-[hsl(var(--gb-dark))] text-[hsl(var(--gb-darkest))] text-sm font-bold placeholder:text-[hsl(var(--gb-dark))]/40 focus:outline-none focus:border-[hsl(var(--gb-darkest))]"
-            data-testid="input-pace"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              max="59"
+              value={paceMin}
+              onChange={(e) => setPaceMin(e.target.value.slice(0, 2))}
+              placeholder="5"
+              className="w-full py-3 px-4 bg-[hsl(var(--gb-light))] border-4 border-[hsl(var(--gb-dark))] text-[hsl(var(--gb-darkest))] text-sm font-bold text-center placeholder:text-[hsl(var(--gb-dark))]/40 focus:outline-none focus:border-[hsl(var(--gb-darkest))]"
+              data-testid="input-pace-min"
+            />
+            <span className="text-lg font-bold text-[hsl(var(--gb-darkest))]">:</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              max="59"
+              value={paceSec}
+              onChange={(e) => {
+                const val = e.target.value.slice(0, 2);
+                if (parseInt(val) > 59) return;
+                setPaceSec(val);
+              }}
+              placeholder="30"
+              className="w-full py-3 px-4 bg-[hsl(var(--gb-light))] border-4 border-[hsl(var(--gb-dark))] text-[hsl(var(--gb-darkest))] text-sm font-bold text-center placeholder:text-[hsl(var(--gb-dark))]/40 focus:outline-none focus:border-[hsl(var(--gb-darkest))]"
+              data-testid="input-pace-sec"
+            />
+          </div>
+          <div className="flex justify-between text-[7px] text-[hsl(var(--gb-dark))]/60 mt-1 px-1">
+            <span>MIN</span>
+            <span>SEC</span>
+          </div>
         </div>
 
         {/* Enjoyment Stars */}
