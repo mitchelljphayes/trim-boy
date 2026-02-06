@@ -5,14 +5,14 @@ import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
 import { PowerCells } from "@/components/PowerCells";
 import { HabitGrid } from "@/components/HabitGrid";
 import { RetroButton } from "@/components/RetroButton";
+import { isRecharging } from "@/pages/Recharge";
 
-// Main Game Dashboard
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<number | null>(null);
   const [userName, setUserName] = useState<string>("");
+  const [recharging, setRechargingState] = useState(isRecharging);
 
-  // Load user from local storage
   useEffect(() => {
     const storedId = localStorage.getItem("trim_user_id");
     const storedName = localStorage.getItem("trim_user_name");
@@ -26,46 +26,50 @@ export default function Dashboard() {
     setUserName(storedName);
   }, [setLocation]);
 
-  const { data: stats } = useWeeklyStats(userId);
-  const { mutate: logActivity, isPending } = useCreateLog();
+  useEffect(() => {
+    const handler = () => setRechargingState(isRecharging());
+    window.addEventListener('recharge-status-change', handler);
+    return () => window.removeEventListener('recharge-status-change', handler);
+  }, []);
 
-  const handleLog = (category: string) => {
-    if (!userId) return;
-    logActivity({ category, date: new Date() });
-  };
+  const { data: stats } = useWeeklyStats(userId);
+  const { isPending } = useCreateLog();
 
   if (!userId) return null;
 
   return (
     <div className="min-h-screen bg-[hsl(var(--gb-lightest))] p-4 pb-20 max-w-xl mx-auto">
       
-      {/* Header */}
       <header className="flex justify-between items-end mb-8 pt-2 border-b-4 border-[hsl(var(--gb-dark))] pb-2">
         <div className="flex flex-col">
           <span className="text-[10px] text-[hsl(var(--gb-dark))] mb-1">OPERATOR ID</span>
           <span className="text-xl font-bold text-[hsl(var(--gb-darkest))]">{userName}</span>
         </div>
-        <button 
-          className="p-2 hover:bg-[hsl(var(--gb-light))] border-2 border-transparent hover:border-[hsl(var(--gb-dark))] transition-colors"
-          title="Archive"
-        >
-          <FolderArchive className="w-6 h-6 text-[hsl(var(--gb-darkest))]" />
-        </button>
+        <div className="flex items-center gap-3">
+          <span
+            className={`text-[8px] uppercase tracking-widest ${recharging ? 'text-[hsl(var(--gb-dark))] animate-pulse' : 'text-[hsl(var(--gb-dark))]/50'}`}
+            data-testid="text-system-status"
+          >
+            {recharging ? 'SYSTEM: RECHARGING' : 'SYSTEM: ACTIVE'}
+          </span>
+          <button 
+            className="p-2 hover:bg-[hsl(var(--gb-light))] border-2 border-transparent hover:border-[hsl(var(--gb-dark))] transition-colors"
+            title="Archive"
+          >
+            <FolderArchive className="w-6 h-6 text-[hsl(var(--gb-darkest))]" />
+          </button>
+        </div>
       </header>
 
-      {/* Main Stats Display */}
       <main className="space-y-6">
         
-        {/* Weekly Mission Tracker */}
         <PowerCells 
           strengthCount={stats?.strengthCount || 0} 
           runCount={stats?.runCount || 0} 
         />
 
-        {/* 7-Day Habit Grid */}
         <HabitGrid habits={stats?.habits || []} />
 
-        {/* Action Buttons */}
         <div className="space-y-3 mt-8">
           <h3 className="text-xs mb-4 text-[hsl(var(--gb-darkest))] uppercase tracking-widest text-center">
             Log Activity
@@ -98,7 +102,7 @@ export default function Dashboard() {
 
           <div className="pt-4 border-t-4 border-[hsl(var(--gb-dark))]/20 border-dashed">
             <RetroButton 
-              onClick={() => handleLog('recharge')} 
+              onClick={() => setLocation('/recharge')} 
               fullWidth 
               disabled={isPending}
               className="opacity-75 hover:opacity-100"
@@ -109,9 +113,8 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Retro Status Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))] text-[10px] p-2 flex justify-between px-4 z-50">
-        <span>STATUS: ONLINE</span>
+        <span data-testid="text-status-bar">{recharging ? 'STATUS: RECHARGING' : 'STATUS: ONLINE'}</span>
         <span>BATTERY: 100%</span>
       </div>
     </div>
