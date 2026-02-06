@@ -18,11 +18,11 @@ export default function BootSequence() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-[#9bbc0f] font-mono">
+    <div className="min-h-screen bg-[hsl(var(--gb-lightest))] flex flex-col items-center justify-center text-[hsl(var(--gb-darkest))] font-mono">
       {!started ? (
         <button 
           onClick={handleStart}
-          className="text-xl animate-pulse hover:scale-110 transition-transform"
+          className="text-xl animate-pulse hover:scale-110 transition-transform text-[hsl(var(--gb-darkest))]"
         >
           PRESS START
         </button>
