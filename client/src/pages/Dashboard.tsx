@@ -128,7 +128,7 @@ export default function Dashboard() {
             5. BREATHWORK
           </RetroButton>
 
-          <div className="pt-4 border-t-4 border-[hsl(var(--gb-dark))]/20 border-dashed">
+          <div className="pt-4 border-t-4 border-[hsl(var(--gb-dark))]/20 border-dashed space-y-2">
             <RetroButton 
               onClick={() => setLocation('/recharge')} 
               fullWidth 
@@ -140,6 +140,20 @@ export default function Dashboard() {
                 RECHARGE
               </span>
             </RetroButton>
+            {recharging && (
+              <button
+                onClick={() => {
+                  localStorage.removeItem('trim_recharge_week');
+                  localStorage.removeItem('trim_recharging');
+                  window.dispatchEvent(new Event('recharge-status-change'));
+                  setRechargingState(false);
+                }}
+                className="w-full text-center text-[7px] text-[hsl(var(--gb-dark))]/40 uppercase tracking-widest hover:text-[hsl(var(--gb-dark))] transition-colors py-1"
+                data-testid="button-recharge-override"
+              >
+                [ OVERRIDE RECHARGE ]
+              </button>
+            )}
           </div>
 
           <div className="pt-2">
