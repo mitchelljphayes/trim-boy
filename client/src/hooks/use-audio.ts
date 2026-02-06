@@ -148,5 +148,45 @@ export function useAudio() {
     osc.stop(now + 0.8);
   }, [initAudio]);
 
-  return { playHighBeep, playLowBlip, playStartupSound, playCelebratoryIdent, playGentleIdent, playInhaleSweep, playExhaleSweep, playHoldChime, initAudio, setMuted };
+  const playGoldenChime = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const notes = [
+      { freq: 1318.5, time: 0, dur: 0.3 },
+      { freq: 1568, time: 0.15, dur: 0.3 },
+      { freq: 2093, time: 0.3, dur: 0.5 },
+      { freq: 2637, time: 0.5, dur: 0.6 },
+      { freq: 3136, time: 0.7, dur: 0.8 },
+    ];
+
+    notes.forEach(({ freq, time, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, now + time);
+      gain.gain.setValueAtTime(0.06, now + time);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + time + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + time);
+      osc.stop(now + time + dur);
+    });
+
+    const shimmer = ctx.createOscillator();
+    const shimGain = ctx.createGain();
+    shimmer.type = 'sine';
+    shimmer.frequency.setValueAtTime(4186, now + 0.8);
+    shimGain.gain.setValueAtTime(0.03, now + 0.8);
+    shimGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.0);
+    shimmer.connect(shimGain);
+    shimGain.connect(ctx.destination);
+    shimmer.start(now + 0.8);
+    shimmer.stop(now + 2.0);
+  }, [initAudio]);
+
+  return { playHighBeep, playLowBlip, playStartupSound, playCelebratoryIdent, playGentleIdent, playInhaleSweep, playExhaleSweep, playHoldChime, playGoldenChime, initAudio, setMuted };
 }

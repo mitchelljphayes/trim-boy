@@ -107,6 +107,46 @@
   100% { opacity: 1; text-shadow: 0 0 8px rgba(255, 215, 0, 0.7); }
 }
 
+.gold-sprite-fadein {
+  animation: gold-fade-in 2s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes gold-fade-in {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.gold-sparkle {
+  background: #FFD700;
+  border-radius: 0;
+  position: absolute;
+  pointer-events: none;
+  animation: sparkle-glint infinite ease-in-out;
+  z-index: 5;
+}
+
+@keyframes sparkle-glint {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  20% { opacity: 0; }
+  50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 6px 2px rgba(255, 215, 0, 0.6); }
+  80% { opacity: 0; }
+}
+
+.gold-flash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: white;
+  animation: gold-flash 0.4s ease-out forwards;
+}
+
+@keyframes gold-flash {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
 .theme-color .lcd-pixel-grid,
 .theme-color .lcd-scanlines,
 .theme-color .lcd-noise {
