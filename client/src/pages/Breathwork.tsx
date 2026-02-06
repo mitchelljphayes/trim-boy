@@ -1,9 +1,58 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { useCreateLog } from '@/hooks/use-trim';
 import { useAudio } from '@/hooks/use-audio';
 import { RetroButton } from '@/components/RetroButton';
 import { ArrowLeft, VolumeX, Volume2, X } from 'lucide-react';
+
+interface Starling {
+  id: number;
+  x: number;
+  y: number;
+  driftX: number;
+  driftY: number;
+  duration: number;
+  delay: number;
+  size: number;
+}
+
+function StarlingField() {
+  const starlings = useMemo<Starling[]>(() => {
+    return Array.from({ length: 40 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      driftX: (Math.random() - 0.5) * 30,
+      driftY: (Math.random() - 0.5) * 20,
+      duration: 6 + Math.random() * 8,
+      delay: Math.random() * -10,
+      size: 4 + Math.random() * 6,
+    }));
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
+      {starlings.map((s) => (
+        <span
+          key={s.id}
+          className="absolute text-[hsl(var(--gb-light))] starling-drift"
+          style={{
+            left: `${s.x}%`,
+            top: `${s.y}%`,
+            fontSize: `${s.size}px`,
+            opacity: 0.06,
+            animationDuration: `${s.duration}s`,
+            animationDelay: `${s.delay}s`,
+            ['--drift-x' as string]: `${s.driftX}px`,
+            ['--drift-y' as string]: `${s.driftY}px`,
+          }}
+        >
+          —
+        </span>
+      ))}
+    </div>
+  );
+}
 
 const CYCLE_DURATION = 16;
 const PHASE_DURATION = 4;
@@ -225,34 +274,7 @@ export default function Breathwork() {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--gb-darkest))] flex flex-col items-center justify-between p-6 relative overflow-hidden">
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-[0.06]" aria-hidden="true">
-        <pre
-          className="text-[hsl(var(--gb-light))] text-[10px] leading-tight text-center animate-pulse"
-          style={{ fontFamily: "'Press Start 2P', monospace", animationDuration: '4s' }}
-        >
-{`        |
-       |||
-      |||||
-     |||||||
-    |||||||||
-   \\  |||||  /
-    \\ ||||| /
-     \\|||||/
-      \\|||/
-       \\|/
-        *
-       /|\\
-      /|||\\
-     /|||||\\
-    / ||||| \\
-   /  |||||  \\
-    |||||||||
-     |||||||
-      |||||
-       |||
-        |`}
-        </pre>
-      </div>
+      <StarlingField />
 
       <div className="relative z-10 flex-shrink-0 flex items-center justify-between w-full">
         <p className="text-[9px] text-[hsl(var(--gb-light))] uppercase tracking-widest" data-testid="text-remaining">
@@ -278,24 +300,23 @@ export default function Breathwork() {
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center">
         <div
-          className="border-4 border-[hsl(var(--gb-lightest))] flex items-center justify-center transition-none"
+          className="border-4 border-[hsl(var(--gb-lightest))] transition-none"
           style={{
             width: boxSize,
             height: boxSize,
             boxShadow: `0 0 ${12 + lungFill * 16}px hsl(var(--gb-light) / ${0.15 + lungFill * 0.2})`,
           }}
           data-testid="breath-box"
-        >
+        />
+
+        <div className="mt-8 text-center" style={{ position: 'relative', minHeight: '48px' }}>
           <span
-            className="text-sm font-bold text-[hsl(var(--gb-lightest))] uppercase tracking-widest"
+            className="text-sm font-bold text-[hsl(var(--gb-lightest))] uppercase tracking-widest block"
             data-testid="text-phase"
           >
             {PHASE_LABELS[currentPhase]}
           </span>
-        </div>
-
-        <div className="mt-6">
-          <p className="text-[8px] text-[hsl(var(--gb-light))]/50 uppercase tracking-widest text-center" data-testid="text-cycle">
+          <p className="text-[8px] text-[hsl(var(--gb-light))]/50 uppercase tracking-widest mt-3" data-testid="text-cycle">
             CYCLE {Math.min(Math.floor(elapsed / CYCLE_DURATION) + 1, TOTAL_CYCLES)} / {TOTAL_CYCLES}
           </p>
         </div>

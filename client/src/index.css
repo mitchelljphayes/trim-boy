@@ -163,3 +163,25 @@
   75%  { transform: translate(-1px, -1px); }
   100% { transform: translate(1px, 1px); }
 }
+
+.starling-drift {
+  animation: starling-float linear infinite alternate;
+}
+
+@keyframes starling-float {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(calc(var(--drift-x) * 0.6), calc(var(--drift-y) * 0.3)) rotate(5deg);
+  }
+  50% {
+    transform: translate(var(--drift-x), var(--drift-y)) rotate(-3deg);
+  }
+  75% {
+    transform: translate(calc(var(--drift-x) * 0.4), calc(var(--drift-y) * 0.8)) rotate(4deg);
+  }
+  100% {
+    transform: translate(calc(var(--drift-x) * -0.2), calc(var(--drift-y) * -0.3)) rotate(-2deg);
+  }
+}
