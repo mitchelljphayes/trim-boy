@@ -25,7 +25,7 @@ function StarlingField() {
     for (let f = 0; f < flockCount; f++) {
       const cx = 10 + Math.random() * 80;
       const cy = 10 + Math.random() * 80;
-      const flockSize = 10 + Math.floor(Math.random() * 10);
+      const flockSize = 20 + Math.floor(Math.random() * 16);
       const baseDriftX = (Math.random() - 0.5) * 160;
       const baseDriftY = (Math.random() - 0.5) * 120;
       const baseDuration = 10 + Math.random() * 8;
@@ -33,13 +33,13 @@ function StarlingField() {
       for (let i = 0; i < flockSize; i++) {
         groups.push({
           id: id++,
-          x: cx + (Math.random() - 0.5) * 14,
-          y: cy + (Math.random() - 0.5) * 10,
+          x: cx + (Math.random() - 0.5) * 10,
+          y: cy + (Math.random() - 0.5) * 7,
           driftX: baseDriftX + (Math.random() - 0.5) * 40,
           driftY: baseDriftY + (Math.random() - 0.5) * 30,
           duration: baseDuration + (Math.random() - 0.5) * 6,
           delay: Math.random() * -8,
-          size: 5 + Math.random() * 5,
+          size: 2 + Math.random() * 3,
         });
       }
     }
@@ -49,22 +49,21 @@ function StarlingField() {
   return (
     <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
       {flocks.map((s) => (
-        <span
+        <div
           key={s.id}
-          className="absolute text-[hsl(var(--gb-light))] starling-swarm"
+          className="absolute bg-[hsl(var(--gb-light))] starling-swarm"
           style={{
             left: `${s.x}%`,
             top: `${s.y}%`,
-            fontSize: `${s.size}px`,
-            opacity: 0.15,
+            width: `${s.size}px`,
+            height: `${s.size}px`,
+            opacity: 0.18,
             animationDuration: `${s.duration}s`,
             animationDelay: `${s.delay}s`,
             ['--drift-x' as string]: `${s.driftX}px`,
             ['--drift-y' as string]: `${s.driftY}px`,
           }}
-        >
-          —
-        </span>
+        />
       ))}
     </div>
   );
