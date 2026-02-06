@@ -92,7 +92,7 @@ export default function Dashboard() {
             4. SURFING
           </RetroButton>
 
-          <RetroButton onClick={() => handleLog('breath')} fullWidth disabled={isPending}>
+          <RetroButton onClick={() => setLocation('/breathwork')} fullWidth disabled={isPending}>
             5. BREATHWORK
           </RetroButton>
 

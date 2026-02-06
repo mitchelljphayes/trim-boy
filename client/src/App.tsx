@@ -18,6 +18,7 @@ import SurfLog from "@/pages/SurfLog";
 import RunWarmup from "@/pages/RunWarmup";
 import RunCooldown from "@/pages/RunCooldown";
 import RunLog from "@/pages/RunLog";
+import Breathwork from "@/pages/Breathwork";
 
 function Router() {
   const [userName] = useState(() => localStorage.getItem("trim_user_name"));
@@ -40,6 +41,7 @@ function Router() {
       <Route path="/run/warmup" component={RunWarmup} />
       <Route path="/run/cooldown" component={RunCooldown} />
       <Route path="/run/log" component={RunLog} />
+      <Route path="/breathwork" component={Breathwork} />
       <Route component={NotFound} />
     </Switch>
   );

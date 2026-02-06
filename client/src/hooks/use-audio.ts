@@ -87,5 +87,66 @@ export function useAudio() {
     osc2.stop(now + 3.0);
   }, [initAudio]);
 
-  return { playHighBeep, playLowBlip, playStartupSound, playCelebratoryIdent, playGentleIdent, initAudio, setMuted };
+  const playInhaleSweep = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(262, now);
+    osc.frequency.linearRampToValueAtTime(523, now + 0.8);
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.linearRampToValueAtTime(0.05, now + 0.4);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 1.2);
+  }, [initAudio]);
+
+  const playExhaleSweep = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523, now);
+    osc.frequency.linearRampToValueAtTime(262, now + 0.8);
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.linearRampToValueAtTime(0.05, now + 0.4);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 1.2);
+  }, [initAudio]);
+
+  const playHoldChime = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(1046.5, now);
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.8);
+  }, [initAudio]);
+
+  return { playHighBeep, playLowBlip, playStartupSound, playCelebratoryIdent, playGentleIdent, playInhaleSweep, playExhaleSweep, playHoldChime, initAudio, setMuted };
 }
