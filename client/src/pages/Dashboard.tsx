@@ -168,7 +168,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="flex justify-center pt-6 pb-2 opacity-40">
+        <div className="flex justify-center pt-6 pb-2">
           <img src={trimBoySprite} alt="TrimBoy" className="w-8 h-auto pixelated" data-testid="img-trimboy-sprite" />
         </div>
       </main>
