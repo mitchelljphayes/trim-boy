@@ -40,6 +40,16 @@
   --gb-light: 215 30% 80%;       /* soft powdery blue for boxes */
   --gb-dark: 355 45% 45%;        /* subdued burgundy accent */
   --gb-darkest: 220 10% 18%;     /* dark charcoal text */
+
+  --background: 0 0% 90%;
+  --foreground: 220 10% 18%;
+  --card: 215 30% 80%;
+  --card-foreground: 220 10% 18%;
+  --border: 355 45% 45%;
+  --input: 215 30% 80%;
+  --ring: 220 10% 18%;
+  --primary: 220 10% 18%;
+  --primary-foreground: 0 0% 90%;
   filter: none;
 }
 
