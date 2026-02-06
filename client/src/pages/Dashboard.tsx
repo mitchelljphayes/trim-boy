@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { FolderArchive, Star, BatteryCharging } from "lucide-react";
 import { HardwareToggle } from "@/components/HardwareToggle";
@@ -8,6 +8,7 @@ import { HabitGrid } from "@/components/HabitGrid";
 import { RetroButton } from "@/components/RetroButton";
 import { isRecharging } from "@/pages/Recharge";
 import { hasYogaToday } from "@/pages/Yoga";
+import { checkAndUpdateStreak, getStreak, isProtocolComplete } from "@/lib/streakManager";
 import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 
 export default function Dashboard() {
@@ -16,6 +17,9 @@ export default function Dashboard() {
   const [userName, setUserName] = useState<string>("");
   const [recharging, setRechargingState] = useState(isRecharging);
   const [yogaStar, setYogaStar] = useState(hasYogaToday);
+  const [streak, setStreak] = useState(getStreak);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const lastCheckedStats = useRef<string>("");
 
   useEffect(() => {
     const storedId = localStorage.getItem("trim_user_id");
@@ -44,6 +48,21 @@ export default function Dashboard() {
 
   const { data: stats } = useWeeklyStats(userId);
   const { isPending } = useCreateLog();
+
+  useEffect(() => {
+    if (!stats) return;
+    const statsKey = `${stats.strengthCount}-${stats.runCount}`;
+    if (lastCheckedStats.current === statsKey) return;
+    lastCheckedStats.current = statsKey;
+    const result = checkAndUpdateStreak(stats.strengthCount, stats.runCount);
+    setStreak(result.streak);
+    if (result.justCompleted) {
+      setShowLevelUp(true);
+      setTimeout(() => setShowLevelUp(false), 4000);
+    }
+  }, [stats]);
+
+  const protocolComplete = stats ? isProtocolComplete(stats.strengthCount, stats.runCount) : false;
 
   if (!userId) return null;
 
@@ -74,8 +93,61 @@ export default function Dashboard() {
         </div>
       </header>
 
+      {showLevelUp && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[hsl(var(--gb-darkest))]/90 level-up-overlay" data-testid="level-up-overlay">
+          <img
+            src={trimBoySprite}
+            alt="TrimBoy Meditating"
+            className="w-28 h-auto pixelated mb-6 level-up-sprite"
+            data-testid="img-level-up-sprite"
+          />
+          <p className="text-lg font-bold text-[hsl(var(--gb-lightest))] level-up-text mb-2">
+            LEVEL UP
+          </p>
+          <p className="text-[9px] text-[hsl(var(--gb-light))] uppercase tracking-widest mb-1">
+            4-2 Protocol Complete
+          </p>
+          <p className="text-sm font-bold text-[hsl(var(--gb-lightest))] level-up-text">
+            STREAK: {streak}
+          </p>
+        </div>
+      )}
+
       <main className="space-y-6">
         
+        <div className="flex items-center justify-between mb-0">
+          <div className="flex items-center gap-2">
+            <svg
+              width="20"
+              height="24"
+              viewBox="0 0 10 12"
+              className={protocolComplete ? "streak-flame-active" : "streak-flame-dim"}
+              data-testid="icon-streak-flame"
+            >
+              <path
+                d="M5 0 C5 0 8 3 8 6 C8 7 8 8 7 9 C7 7 6 6 5 6 C5 8 6 9 7 10 C5 11 3 10 2 9 C1 8 1 7 1 6 C1 3 5 0 5 0Z"
+                fill="currentColor"
+              />
+              <path
+                d="M5 4 C5 4 7 6 6 8 C5 7 4 7 4 8 C4 9 5 9 5 9 C4 9 3 8 3 7 C3 5 5 4 5 4Z"
+                fill="currentColor"
+                opacity="0.5"
+              />
+            </svg>
+            {streak > 0 && (
+              <span
+                className="text-[9px] font-bold uppercase tracking-widest text-[hsl(var(--gb-darkest))]"
+                data-testid="text-streak-count"
+              >
+                x{streak}
+              </span>
+            )}
+          </div>
+          <span className="text-[8px] text-[hsl(var(--gb-dark))] uppercase tracking-widest">
+            {protocolComplete ? '4-2 COMPLETE' : '4-2 PROTOCOL'}
+          </span>
+        </div>
+
         <PowerCells 
           strengthCount={stats?.strengthCount || 0} 
           runCount={stats?.runCount || 0} 
