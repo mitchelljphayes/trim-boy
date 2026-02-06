@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { Zap, Activity } from "lucide-react";
 
 interface PowerCellsProps {
-  strengthCount: number; // Max 2
+  strengthCount: number; // Max 4
   runCount: number;      // Max 2
 }
 
@@ -15,7 +15,7 @@ export function PowerCells({ strengthCount, runCount }: PowerCellsProps) {
         <div
           key={i}
           className={cn(
-            "w-10 h-10 md:w-12 md:h-12 border-4 border-[hsl(var(--gb-dark))] flex items-center justify-center transition-all duration-300",
+            "w-8 h-8 md:w-10 md:h-10 border-4 border-[hsl(var(--gb-dark))] flex items-center justify-center transition-all duration-300",
             isFilled ? "bg-[hsl(var(--gb-darkest))]" : "bg-[hsl(var(--gb-lightest))]"
           )}
         >
@@ -33,23 +33,23 @@ export function PowerCells({ strengthCount, runCount }: PowerCellsProps) {
   return (
     <div className="w-full bg-[hsl(var(--gb-light))] p-4 border-4 border-[hsl(var(--gb-dark))] shadow-[4px_4px_0px_0px_hsl(var(--gb-dark))] mb-6">
       <h3 className="text-xs mb-3 text-[hsl(var(--gb-darkest))] uppercase tracking-widest">Weekly Mission</h3>
-      <div className="flex justify-between items-center gap-4">
+      <div className="flex flex-col gap-4">
         
         {/* Strength Section */}
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] uppercase">STR</span>
-          <div className="flex gap-2">
-            {renderCells(strengthCount, 2, <Zap size={20} fill="currentColor" />)}
+        <div className="flex justify-between items-center">
+          <span className="text-[10px] uppercase font-bold">STR</span>
+          <div className="flex gap-1.5">
+            {renderCells(strengthCount, 4, <Zap size={16} fill="currentColor" />)}
           </div>
         </div>
 
-        <div className="h-10 w-1 bg-[hsl(var(--gb-dark))]/20" />
+        <div className="h-0.5 w-full bg-[hsl(var(--gb-dark))]/10 border-t-2 border-dotted border-[hsl(var(--gb-dark))]/20" />
 
         {/* Run Section */}
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] uppercase">RUN</span>
-          <div className="flex gap-2">
-            {renderCells(runCount, 2, <Activity size={20} />)}
+        <div className="flex justify-between items-center">
+          <span className="text-[10px] uppercase font-bold">RUN</span>
+          <div className="flex gap-1.5">
+            {renderCells(runCount, 2, <Activity size={16} />)}
           </div>
         </div>
 

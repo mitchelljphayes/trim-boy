@@ -33,7 +33,7 @@ export type CreateUserRequest = { name: string };
 export type CreateLogRequest = { category: string; date: string }; // Date as YYYY-MM-DD
 
 export interface WeeklyStatsResponse {
-  strengthCount: number; // Target 2
+  strengthCount: number; // Target 4
   runCount: number;      // Target 2
   habits: {
     date: string;        // YYYY-MM-DD
