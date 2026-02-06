@@ -298,18 +298,22 @@ export default function Breathwork() {
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center">
-        <div
-          className="border-4 border-[hsl(var(--gb-lightest))] transition-none"
-          style={{
-            width: boxSize,
-            height: boxSize,
-            boxShadow: `0 0 ${12 + lungFill * 16}px hsl(var(--gb-light) / ${0.15 + lungFill * 0.2})`,
-          }}
-          data-testid="breath-box"
-        />
+      <div className="relative z-10 flex-1 flex items-center justify-center w-full">
+        <div className="relative" style={{ width: BOX_MAX, height: BOX_MAX }}>
+          <div
+            className="border-4 border-[hsl(var(--gb-lightest))] transition-none absolute"
+            style={{
+              width: boxSize,
+              height: boxSize,
+              left: (BOX_MAX - boxSize) / 2,
+              top: (BOX_MAX - boxSize) / 2,
+              boxShadow: `0 0 ${12 + lungFill * 16}px hsl(var(--gb-light) / ${0.15 + lungFill * 0.2})`,
+            }}
+            data-testid="breath-box"
+          />
+        </div>
 
-        <div className="mt-8 text-center" style={{ position: 'relative', minHeight: '48px' }}>
+        <div className="absolute left-0 right-0 text-center" style={{ top: `calc(50% + ${BOX_MAX / 2 + 24}px)` }}>
           <span
             className="text-sm font-bold text-[hsl(var(--gb-lightest))] uppercase tracking-widest block"
             data-testid="text-phase"
