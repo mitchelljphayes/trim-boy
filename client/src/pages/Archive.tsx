@@ -102,17 +102,90 @@ function FalconIcon({ size = 12 }: { size?: number }) {
   );
 }
 
+function WaveIcon({ size = 10, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" className={`inline-block flex-shrink-0 ${className}`}>
+      <path d="M1 8C2 6 3 5 4 6C5 7 6 5 7 4C8 3 9 4 11 6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M1 10C2 8 3 7 4 8C5 9 6 7 7 6" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.5" />
+    </svg>
+  );
+}
+
+function WindIcon({ size = 10, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" className={`inline-block flex-shrink-0 ${className}`}>
+      <path d="M1 4H8C9 4 10 3 9 2C8 1 7 2 7 3" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      <path d="M1 7H6C7 7 8 8 7 9C6 10 5 9 5 8" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      <line x1="1" y1="10" x2="4" y2="10" stroke="currentColor" strokeWidth="1" opacity="0.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TideIcon({ size = 10, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" className={`inline-block flex-shrink-0 ${className}`}>
+      <rect x="1" y="1" width="10" height="10" stroke="currentColor" strokeWidth="0.8" fill="none" opacity="0.3" />
+      <path d="M1 9L3 7L5 8L7 4L9 5L11 3" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="7" cy="4" r="1" fill="currentColor" opacity="0.6" />
+    </svg>
+  );
+}
+
+function isStormTheme(): boolean {
+  const root = document.getElementById('app-root');
+  return root?.classList.contains('theme-storm') ?? false;
+}
+
 function SurfDetail({ meta }: { meta: Record<string, unknown> }) {
   const loc = meta.location ? String(meta.location).toUpperCase() : null;
   const time = meta.timeSurf ? String(meta.timeSurf) : null;
   const rating = typeof meta.enjoyment === 'number' ? meta.enjoyment : 0;
+  const marine = meta.marine as Record<string, unknown> | undefined;
+  const storm = isStormTheme();
+  const marineStyle = storm ? { color: '#00f2ff', textShadow: '0 0 4px rgba(0,242,255,0.5)' } : {};
+
   return (
-    <div className="text-[8px] text-[hsl(var(--gb-dark))] flex flex-wrap gap-x-3 gap-y-[2px] mt-[2px]">
-      {loc && <span>LOC: {loc}</span>}
-      {time && <span>TIME: {time}MIN</span>}
-      {rating > 0 && (
-        <span className="flex items-center gap-1">RATING: <StarRating rating={rating} /></span>
-      )}
+    <div className="text-[8px] text-[hsl(var(--gb-dark))] mt-[2px] space-y-[2px]">
+      <div className="flex flex-wrap gap-x-3 gap-y-[2px]">
+        {loc && <span>LOC: {loc}</span>}
+        {time && <span>TIME: {time}MIN</span>}
+        {rating > 0 && (
+          <span className="flex items-center gap-1">RATING: <StarRating rating={rating} /></span>
+        )}
+      </div>
+      {marine && (() => {
+        const swellVal = marine.swell ? String(marine.swell) : '';
+        const windVal = marine.wind ? String(marine.wind) : '';
+        const tideVal = marine.tide ? String(marine.tide) : '';
+        const hasData = (swellVal && swellVal !== 'N/A') || (windVal && windVal !== 'N/A') || (tideVal && tideVal !== 'N/A');
+        if (!hasData) return null;
+        return (
+          <div
+            className="flex flex-wrap gap-x-3 gap-y-[2px] items-center"
+            style={marineStyle}
+            data-testid="surf-marine-data"
+          >
+            {swellVal && swellVal !== 'N/A' && (
+              <span className="flex items-center gap-[3px]">
+                <WaveIcon size={10} />
+                {swellVal}
+              </span>
+            )}
+            {windVal && windVal !== 'N/A' && (
+              <span className="flex items-center gap-[3px]">
+                <WindIcon size={10} />
+                {windVal}
+              </span>
+            )}
+            {tideVal && tideVal !== 'N/A' && (
+              <span className="flex items-center gap-[3px]">
+                <TideIcon size={10} />
+                {tideVal}
+              </span>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -53,6 +53,14 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/logs` — Create a new activity log entry
 - `GET /api/logs/weekly/:userId` — Get weekly stats (strength count, run count, daily habit booleans)
 
+### Surf Marine Data (`client/src/lib/marineData.ts`)
+- **Conditional Trigger**: Marine data fetch only runs when logging a SURF session (not strength/run)
+- **Geolocation**: Uses browser `navigator.geolocation` to get device coordinates
+- **Marine API**: Calls Open-Meteo Marine API (free, no API key) for swell height and tide data, plus Open-Meteo Weather API for wind speed/direction
+- **Data Stored**: `metadata.marine` object on surf log entries with `swell`, `wind`, `tide`, `swellHeight`, `windSpeed`, `windDirection`, `tideStage`, `lat`, `lon`
+- **Archive Display**: 8-bit SVG icons (wave, wind-sock, tide-chart) next to surf entries. Lightning Edition renders marine text in Electric Cyan (#00f2ff)
+- **Fallback**: If geolocation or API fails, surf log saves without marine data (graceful degradation)
+
 ### Shared Route Contracts (`shared/routes.ts`)
 All API routes are defined as objects with `method`, `path`, `input` (Zod schema), and `responses` (Zod schemas keyed by status code). Both client hooks and server handlers reference these contracts for type safety and validation. A `buildUrl` helper handles parameterized paths.
 

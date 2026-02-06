@@ -4,6 +4,7 @@ import { useCreateLog } from '@/hooks/use-trim';
 import { useAudio } from '@/hooks/use-audio';
 import { RetroButton } from '@/components/RetroButton';
 import { ArrowLeft, Star } from 'lucide-react';
+import { getDeviceLocation, fetchMarineConditions } from '@/lib/marineData';
 
 export default function SurfLog() {
   const [, setLocation] = useLocation();
@@ -13,21 +14,24 @@ export default function SurfLog() {
   const [timeSurf, setTimeSurf] = useState('');
   const [location, setLocationText] = useState('');
   const [enjoyment, setEnjoyment] = useState(0);
+  const [isFetchingMarine, setIsFetchingMarine] = useState(false);
+  const [marineStatus, setMarineStatus] = useState('');
 
-  const handleSave = () => {
-    initAudio();
-    const userId = localStorage.getItem('trim_user_id');
-    if (!userId) return;
+  const saveLog = (marineData?: Record<string, unknown>) => {
+    const meta: Record<string, unknown> = {
+      timeSurf: parseInt(timeSurf) || 0,
+      location: location,
+      enjoyment: enjoyment,
+    };
+    if (marineData) {
+      meta.marine = marineData;
+    }
 
     logActivity(
       {
         category: 'surf',
         date: new Date(),
-        metadata: {
-          timeSurf: parseInt(timeSurf) || 0,
-          location: location,
-          enjoyment: enjoyment,
-        },
+        metadata: meta,
       },
       {
         onSuccess: () => {
@@ -36,6 +40,38 @@ export default function SurfLog() {
         },
       }
     );
+  };
+
+  const handleSave = async () => {
+    initAudio();
+    const userId = localStorage.getItem('trim_user_id');
+    if (!userId) return;
+
+    setIsFetchingMarine(true);
+    setMarineStatus('LOCATING...');
+
+    try {
+      const coords = await getDeviceLocation();
+      setMarineStatus('FETCHING MARINE DATA...');
+      const conditions = await fetchMarineConditions(coords.lat, coords.lon);
+      setIsFetchingMarine(false);
+      setMarineStatus('');
+      saveLog({
+        swell: conditions.swell,
+        wind: conditions.wind,
+        tide: conditions.tide,
+        swellHeight: conditions.swellHeight,
+        windSpeed: conditions.windSpeed,
+        windDirection: conditions.windDirection,
+        tideStage: conditions.tideStage,
+        lat: conditions.lat,
+        lon: conditions.lon,
+      });
+    } catch {
+      setIsFetchingMarine(false);
+      setMarineStatus('');
+      saveLog();
+    }
   };
 
   const canSave = timeSurf && enjoyment > 0;
@@ -107,14 +143,21 @@ export default function SurfLog() {
           </div>
         </div>
 
-        {/* Save */}
+        {marineStatus && (
+          <div className="text-center" data-testid="text-marine-status">
+            <p className="text-[8px] text-[hsl(var(--gb-dark))] uppercase tracking-widest animate-pulse">
+              {marineStatus}
+            </p>
+          </div>
+        )}
+
         <RetroButton
           onClick={handleSave}
           fullWidth
-          disabled={!canSave || isPending}
+          disabled={!canSave || isPending || isFetchingMarine}
           data-testid="button-save"
         >
-          {isPending ? 'SAVING...' : 'SAVE LOG'}
+          {isFetchingMarine ? 'SCANNING...' : isPending ? 'SAVING...' : 'SAVE LOG'}
         </RetroButton>
       </div>
 
