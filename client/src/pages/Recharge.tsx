@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { startOfWeek, format } from 'date-fns';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { RetroButton } from '@/components/RetroButton';
 
 const ANIME = [
@@ -163,8 +163,22 @@ export default function Recharge() {
 
   // === RECHARGE IN PROGRESS ===
   if (rechargeActive) {
+    const cancelRecharge = () => {
+      localStorage.removeItem('trim_recharge_week');
+      localStorage.removeItem('trim_recharging');
+      window.dispatchEvent(new Event('recharge-status-change'));
+      setLocation('/dashboard');
+    };
     return (
-      <div className="min-h-screen bg-[hsl(var(--gb-darkest))] flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-[hsl(var(--gb-darkest))] flex flex-col items-center justify-center p-6 relative">
+        <button
+          onClick={cancelRecharge}
+          className="absolute top-4 right-4 text-[hsl(var(--gb-light))]/50 hover:text-[hsl(var(--gb-lightest))] transition-colors p-2"
+          data-testid="button-cancel-recharge"
+          title="Cancel recharge"
+        >
+          <X size={20} />
+        </button>
         <p className="text-[9px] text-[hsl(var(--gb-light))] uppercase tracking-widest mb-4">
           SYSTEM: RECHARGING
         </p>
