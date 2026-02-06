@@ -125,6 +125,63 @@
   100% { opacity: 1; text-shadow: 0 0 12px rgba(0, 242, 255, 0.9), 0 0 20px rgba(157, 0, 255, 0.5); }
 }
 
+.locked-tier-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 9999;
+  font-family: 'Press Start 2P', monospace;
+  background: var(--popup-bg, #111);
+  border: 2px solid var(--popup-color, #888);
+  padding: 10px 12px;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: locked-popup-in 0.3s ease-out;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--popup-color) 40%, transparent),
+              inset 0 0 8px color-mix(in srgb, var(--popup-color) 10%, transparent);
+}
+
+.locked-tier-popup-icon {
+  font-size: 14px;
+  color: var(--popup-color);
+  text-shadow: 0 0 6px var(--popup-color);
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--popup-color);
+  opacity: 0.8;
+}
+
+.locked-tier-popup-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.locked-tier-popup-name {
+  font-size: 7px;
+  color: var(--popup-color);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--popup-color) 60%, transparent);
+  letter-spacing: 1px;
+}
+
+.locked-tier-popup-req {
+  font-size: 5px;
+  color: #aaa;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+@keyframes locked-popup-in {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 .theme-gold .lcd-pixel-grid,
 .theme-gold .lcd-scanlines,
 .theme-gold .lcd-noise {

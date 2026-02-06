@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getStreak, isGbcUnlocked } from "@/lib/streakManager";
 
 type HardwareTheme = "classic" | "color" | "gold" | "storm";
@@ -59,6 +59,13 @@ function StormIcon({ size = 20 }: { size?: number }) {
   );
 }
 
+interface LockedNotification {
+  name: string;
+  requirement: string;
+  color: string;
+  bgColor: string;
+}
+
 const ALL_THEMES: HardwareTheme[] = ["classic", "color", "gold", "storm"];
 
 export function HardwareToggle() {
@@ -68,6 +75,8 @@ export function HardwareToggle() {
   const [gbcAvailable, setGbcAvailable] = useState(() => isGbcUnlocked());
   const [goldUnlocked, setGoldUnlocked] = useState(() => getStreak() >= 2);
   const [stormUnlocked, setStormUnlocked] = useState(() => getStreak() >= 5);
+  const [lockedPopup, setLockedPopup] = useState<LockedNotification | null>(null);
+  const popupTimer = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     const handler = () => {
@@ -90,6 +99,10 @@ export function HardwareToggle() {
   }, []);
 
   useEffect(() => {
+    return () => { if (popupTimer.current) clearTimeout(popupTimer.current); };
+  }, []);
+
+  useEffect(() => {
     const root = document.getElementById("app-root");
     if (!root) return;
     root.classList.remove("theme-classic", "theme-color", "theme-gold", "theme-storm");
@@ -97,17 +110,40 @@ export function HardwareToggle() {
     localStorage.setItem("trim_hardware_theme", theme);
   }, [theme]);
 
+  function getNextLockedTier(): LockedNotification | null {
+    if (!gbcAvailable) {
+      return { name: "GBC COLOR", requirement: "2-WEEK STREAK", color: "#33CC33", bgColor: "#0a1a0a" };
+    }
+    if (!goldUnlocked) {
+      return { name: "GOLD EDITION", requirement: "2-WEEK STREAK", color: "#FFD700", bgColor: "#2d1b00" };
+    }
+    if (!stormUnlocked) {
+      return { name: "LIGHTNING EDITION", requirement: "5-WEEK STREAK", color: "#00f2ff", bgColor: "#1a0633" };
+    }
+    return null;
+  }
+
   const toggle = () => {
+    const available = ALL_THEMES.filter(t => {
+      if (t === "storm" && !stormUnlocked) return false;
+      if (t === "gold" && !goldUnlocked) return false;
+      if (t === "color" && !gbcAvailable) return false;
+      return true;
+    });
+
+    const nextLocked = getNextLockedTier();
+    const isOnLastAvailable = available.indexOf(theme) === available.length - 1;
+
+    if (isOnLastAvailable && nextLocked) {
+      if (popupTimer.current) clearTimeout(popupTimer.current);
+      setLockedPopup(nextLocked);
+      popupTimer.current = setTimeout(() => setLockedPopup(null), 2500);
+    }
+
     setTheme((prev) => {
-      let available = ALL_THEMES.filter(t => {
-        if (t === "storm" && !stormUnlocked) return false;
-        if (t === "gold" && !goldUnlocked) return false;
-        if (t === "color" && !gbcAvailable) return false;
-        return true;
-      });
-      if (available.length === 0) available = ["classic"];
-      const idx = available.indexOf(prev);
-      return available[(idx + 1) % available.length];
+      let avail = available.length > 0 ? available : ["classic" as HardwareTheme];
+      const idx = avail.indexOf(prev);
+      return avail[(idx + 1) % avail.length];
     });
   };
 
@@ -118,31 +154,43 @@ export function HardwareToggle() {
     storm: "STORM",
   };
 
-  const titles: Record<HardwareTheme, string> = {
-    classic: "Switch to GBC Mode",
-    color: goldUnlocked ? "Switch to Gold Edition" : "Switch to DMG Mode",
-    gold: stormUnlocked ? "Switch to Lightning Edition" : "Switch to DMG Mode",
-    storm: "Switch to DMG Mode",
-  };
-
   return (
-    <button
-      onClick={toggle}
-      className="p-2 hover:bg-[hsl(var(--gb-light))] border-2 border-transparent hover:border-[hsl(var(--gb-dark))] transition-colors flex items-center gap-1"
-      title={titles[theme]}
-      data-testid="button-theme-toggle"
-    >
-      {theme === "classic" && <DMGIcon size={22} />}
-      {theme === "color" && <GBCIcon size={22} />}
-      {theme === "gold" && <GoldIcon size={22} />}
-      {theme === "storm" && <StormIcon size={22} />}
-      <span className={`text-[6px] uppercase tracking-wider ${
-        theme === "gold" ? "text-[#FFD700]" :
-        theme === "storm" ? "text-[#00f2ff]" :
-        "text-[hsl(var(--gb-darkest))]"
-      }`}>
-        {labels[theme]}
-      </span>
-    </button>
+    <div className="relative">
+      <button
+        onClick={toggle}
+        className="p-2 hover:bg-[hsl(var(--gb-light))] border-2 border-transparent hover:border-[hsl(var(--gb-dark))] transition-colors flex items-center gap-1"
+        title="Cycle theme"
+        data-testid="button-theme-toggle"
+      >
+        {theme === "classic" && <DMGIcon size={22} />}
+        {theme === "color" && <GBCIcon size={22} />}
+        {theme === "gold" && <GoldIcon size={22} />}
+        {theme === "storm" && <StormIcon size={22} />}
+        <span className={`text-[6px] uppercase tracking-wider ${
+          theme === "gold" ? "text-[#FFD700]" :
+          theme === "storm" ? "text-[#00f2ff]" :
+          "text-[hsl(var(--gb-darkest))]"
+        }`}>
+          {labels[theme]}
+        </span>
+      </button>
+
+      {lockedPopup && (
+        <div
+          className="locked-tier-popup"
+          style={{
+            '--popup-color': lockedPopup.color,
+            '--popup-bg': lockedPopup.bgColor,
+          } as React.CSSProperties}
+          data-testid="text-locked-tier-popup"
+        >
+          <div className="locked-tier-popup-icon">?</div>
+          <div className="locked-tier-popup-text">
+            <span className="locked-tier-popup-name">{lockedPopup.name}</span>
+            <span className="locked-tier-popup-req">REACH {lockedPopup.requirement}</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
