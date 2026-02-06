@@ -43,6 +43,12 @@
   filter: none;
 }
 
+.theme-color .lcd-pixel-grid,
+.theme-color .lcd-scanlines,
+.theme-color .lcd-noise {
+  display: none;
+}
+
 @layer base {
   body {
     @apply bg-[hsl(var(--gb-lightest))] text-[hsl(var(--gb-darkest))] antialiased selection:bg-[hsl(var(--gb-dark))] selection:text-[hsl(var(--gb-lightest))];
