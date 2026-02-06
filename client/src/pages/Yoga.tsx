@@ -39,12 +39,6 @@ const SECTION_SUBTITLES: Record<string, string> = {
   'CLOSING': 'Surrender',
 };
 
-const GOLD = '#FFD700';
-const GOLD_DIM = '#B8960F';
-const GOLD_DARK = '#8B7300';
-const GOLD_BG = '#1A1400';
-const GOLD_LIGHT = '#FFF3C4';
-
 function formatTime(s: number) {
   const m = Math.floor(s / 60);
   const sec = s % 60;
@@ -155,44 +149,44 @@ export default function Yoga() {
     const sections = Array.from(new Set(EXERCISES_ONLY.map(e => e.section)));
 
     return (
-      <div className="min-h-screen p-6 flex flex-col items-center justify-center text-center" style={{ background: GOLD_BG }}>
-        <h1 className="text-xl font-bold mb-2" style={{ color: GOLD }} data-testid="text-title">
+      <div className="min-h-screen p-6 flex flex-col items-center justify-center text-center bg-[hsl(var(--gb-lightest))]">
+        <h1 className="text-xl font-bold mb-2 text-[hsl(var(--gb-darkest))]" data-testid="text-title">
           ASHTANGA FLOW
         </h1>
-        <p className="mb-1 text-[9px] uppercase tracking-widest" style={{ color: GOLD_DIM }}>
+        <p className="mb-1 text-[9px] uppercase tracking-widest text-[hsl(var(--gb-dark))]">
           Bonus Module / {totalMin} Minutes
         </p>
-        <p className="mb-6 text-[8px] uppercase tracking-widest" style={{ color: GOLD_DARK }}>
+        <p className="mb-6 text-[8px] uppercase tracking-widest text-[hsl(var(--gb-dark))] opacity-60">
           Ujjayi Breath Focus
         </p>
 
-        <div className="mb-6 w-full max-w-xs text-left p-4 border-2" style={{ borderColor: GOLD_DIM, background: `${GOLD_DARK}20` }}>
+        <div className="mb-6 w-full max-w-xs text-left p-4 border-2 border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-light)_/_0.15)]">
           {sections.map((section) => {
             const sectionExercises = EXERCISES_ONLY.filter(e => e.section === section);
             const sectionTime = sectionExercises.reduce((a, e) => a + e.duration, 0);
             return (
               <div key={section} className="mb-3 last:mb-0">
-                <div className="flex justify-between items-baseline mb-1">
-                  <span className="text-[8px] font-bold uppercase tracking-widest" style={{ color: GOLD }}>
+                <div className="flex justify-between items-baseline gap-2 mb-1">
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-[hsl(var(--gb-darkest))]">
                     {section}
                   </span>
-                  <span className="text-[7px]" style={{ color: GOLD_DIM }}>
+                  <span className="text-[7px] text-[hsl(var(--gb-dark))]">
                     {formatTime(sectionTime)}
                   </span>
                 </div>
                 {sectionExercises.map((ex, i) => (
                   <div key={i} className="py-1 flex justify-between gap-2 items-start">
                     <div className="flex flex-col truncate">
-                      <span className="text-[8px] font-bold uppercase truncate yoga-sanskrit-name" style={{ color: GOLD_LIGHT }}>
+                      <span className="text-[8px] font-bold uppercase truncate text-[hsl(var(--gb-darkest))]">
                         {ex.sanskritName}
                       </span>
                       {ex.englishName && (
-                        <span className="text-[7px] truncate yoga-english-name" style={{ color: GOLD_DIM, opacity: 0.6 }}>
+                        <span className="text-[7px] truncate text-[hsl(var(--gb-dark))] opacity-60">
                           {ex.englishName}
                         </span>
                       )}
                     </div>
-                    <span className="flex-shrink-0 text-[7px] pt-0.5" style={{ color: GOLD_DIM }}>{formatTime(ex.duration)}</span>
+                    <span className="flex-shrink-0 text-[7px] pt-0.5 text-[hsl(var(--gb-dark))]">{formatTime(ex.duration)}</span>
                   </div>
                 ))}
               </div>
@@ -200,15 +194,12 @@ export default function Yoga() {
           })}
         </div>
 
-        <RetroButton onClick={startRoutine} className="w-full max-w-xs" data-testid="button-start"
-          style={{ background: GOLD_DARK, color: GOLD_LIGHT, borderColor: GOLD }}
-        >
+        <RetroButton onClick={startRoutine} className="w-full max-w-xs" data-testid="button-start">
           BEGIN FLOW
         </RetroButton>
         <button
           onClick={() => setLocation('/dashboard')}
-          className="mt-6 flex items-center gap-2 text-xs"
-          style={{ color: GOLD_DIM }}
+          className="mt-6 flex items-center gap-2 text-xs text-[hsl(var(--gb-dark))]"
           data-testid="button-back"
         >
           <ArrowLeft size={14} /> BACK
@@ -219,25 +210,24 @@ export default function Yoga() {
 
   if (complete) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-center p-8 relative" style={{ background: GOLD_BG }}>
+      <div className="min-h-screen flex items-center justify-center text-center p-8 relative bg-[hsl(var(--gb-lightest))]">
         <button
           onClick={exitRoutine}
-          className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center border-2"
-          style={{ borderColor: GOLD_DIM, color: GOLD_DIM }}
+          className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-dark))] text-[hsl(var(--gb-dark))]"
           data-testid="button-exit"
         >
           <X size={18} />
         </button>
         <div>
-          <div className="text-5xl mb-4 flex justify-center" style={{ color: GOLD }} data-testid="text-star">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill={GOLD} stroke={GOLD} strokeWidth="1">
+          <div className="text-5xl mb-4 flex justify-center" data-testid="text-star">
+            <svg width="64" height="64" viewBox="0 0 24 24" className="fill-[hsl(var(--gb-darkest))] stroke-[hsl(var(--gb-darkest))]" strokeWidth="1">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold mb-4" style={{ color: GOLD }} data-testid="text-complete">
+          <h1 className="text-2xl font-bold mb-4 text-[hsl(var(--gb-darkest))]" data-testid="text-complete">
             NAMASTE
           </h1>
-          <p className="text-[10px]" style={{ color: GOLD_DIM }}>GOLD STAR EARNED...</p>
+          <p className="text-[10px] text-[hsl(var(--gb-dark))]">GOLD STAR EARNED...</p>
         </div>
       </div>
     );
@@ -245,11 +235,10 @@ export default function Yoga() {
 
   if (isClosing && currentStep.label === 'SAVASANA') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden" style={{ background: GOLD_BG }}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-[hsl(var(--gb-lightest))]">
         <button
           onClick={exitRoutine}
-          className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center border-2"
-          style={{ borderColor: GOLD_DIM, color: GOLD_DIM }}
+          className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-dark))] text-[hsl(var(--gb-dark))]"
           data-testid="button-exit"
         >
           <X size={18} />
@@ -257,8 +246,8 @@ export default function Yoga() {
 
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
           <pre
-            className="text-[10px] leading-tight text-center animate-pulse"
-            style={{ fontFamily: "'Press Start 2P', monospace", color: `${GOLD}15`, animationDuration: '4s' }}
+            className="text-[10px] leading-tight text-center animate-pulse text-[hsl(var(--gb-darkest)_/_0.08)]"
+            style={{ fontFamily: "'Press Start 2P', monospace", animationDuration: '4s' }}
           >
 {`        |
        |||
@@ -285,33 +274,33 @@ export default function Yoga() {
         </div>
 
         <div className="relative z-10 flex flex-col items-center text-center">
-          <p className="text-[9px] uppercase tracking-widest mb-4" style={{ color: GOLD_DIM }} data-testid="text-phase">
+          <p className="text-[9px] uppercase tracking-widest mb-4 text-[hsl(var(--gb-dark))]" data-testid="text-phase">
             HEAVENLY SAVASANA
           </p>
-          <h2 className="text-sm font-bold mb-6" style={{ color: GOLD }} data-testid="text-exercise">
+          <h2 className="text-sm font-bold mb-6 text-[hsl(var(--gb-darkest))]" data-testid="text-exercise">
             {currentStep.label}
           </h2>
 
           <div
-            className="text-5xl font-bold mb-8"
-            style={{ fontFamily: "'Press Start 2P', monospace", color: GOLD }}
+            className="text-5xl font-bold mb-8 text-[hsl(var(--gb-darkest))]"
+            style={{ fontFamily: "'Press Start 2P', monospace" }}
             data-testid="text-timer"
           >
             {formatTime(timeLeft)}
           </div>
 
-          <div className="w-48 h-3 border-2 p-0.5 mb-6" style={{ borderColor: GOLD_DIM }}>
+          <div className="w-48 h-3 border-2 p-0.5 mb-6 border-[hsl(var(--gb-dark))]">
             <div
-              className="h-full transition-all duration-1000"
-              style={{ width: `${(timeLeft / currentStep.duration) * 100}%`, background: GOLD }}
+              className="h-full transition-all duration-1000 bg-[hsl(var(--gb-darkest))]"
+              style={{ width: `${(timeLeft / currentStep.duration) * 100}%` }}
             />
           </div>
 
           <div className="flex gap-4 items-center">
-            <button onClick={togglePause} className="w-10 h-10 flex items-center justify-center border-2" style={{ borderColor: GOLD, color: GOLD }} data-testid="button-pause">
+            <button onClick={togglePause} className="w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-darkest))]" data-testid="button-pause">
               {paused ? <Play size={18} /> : <Pause size={18} />}
             </button>
-            <button onClick={toggleMute} className="w-10 h-10 flex items-center justify-center border-2" style={{ borderColor: GOLD, color: GOLD }} data-testid="button-mute">
+            <button onClick={toggleMute} className="w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-darkest))]" data-testid="button-mute">
               {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
             </button>
           </div>
@@ -326,22 +315,21 @@ export default function Yoga() {
   const currentExIdx = EXERCISES_ONLY.findIndex(e => e.label === currentStep?.label && e.section === currentStep?.section);
 
   return (
-    <div className="min-h-screen flex flex-col transition-colors duration-300" style={{ background: isPrep ? GOLD_BG : `${GOLD_BG}` }}>
-      <div className="flex-shrink-0 flex items-center justify-between px-4 pt-4">
+    <div className="min-h-screen flex flex-col transition-colors duration-300 bg-[hsl(var(--gb-lightest))]">
+      <div className="flex-shrink-0 flex items-center justify-between gap-2 px-4 pt-4">
         <div>
-          <p className="text-[9px] uppercase tracking-widest" style={{ color: isPrep ? GOLD_DIM : GOLD }} data-testid="text-phase">
+          <p className="text-[9px] uppercase tracking-widest text-[hsl(var(--gb-darkest))]" data-testid="text-phase">
             {isPrep ? 'GET READY' : currentSection}
           </p>
           {!isPrep && sectionSubtitle && (
-            <p className="text-[7px] uppercase tracking-wider mt-0.5" style={{ color: GOLD_DIM }}>
+            <p className="text-[7px] uppercase tracking-wider mt-0.5 text-[hsl(var(--gb-dark))]">
               {sectionSubtitle}
             </p>
           )}
         </div>
         <button
           onClick={exitRoutine}
-          className="w-10 h-10 flex items-center justify-center border-2"
-          style={{ borderColor: GOLD_DIM, color: GOLD_DIM }}
+          className="w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-dark))] text-[hsl(var(--gb-dark))]"
           data-testid="button-exit"
         >
           <X size={18} />
@@ -349,44 +337,42 @@ export default function Yoga() {
       </div>
 
       <div className="flex-shrink-0 flex flex-col items-center pb-3 px-4">
-        <h2 className="text-xs font-bold mb-1 uppercase text-center yoga-sanskrit-name" style={{ color: GOLD }} data-testid="text-exercise">
+        <h2 className="text-xs font-bold mb-1 uppercase text-center text-[hsl(var(--gb-darkest))]" data-testid="text-exercise">
           {currentStep.sanskritName}
         </h2>
         {currentStep.englishName && (
-          <p className="text-[7px] mb-3 text-center yoga-english-name" style={{ color: GOLD_DIM, opacity: 0.6 }}>
+          <p className="text-[7px] mb-3 text-center text-[hsl(var(--gb-dark))] opacity-60">
             {currentStep.englishName}
           </p>
         )}
         {!currentStep.englishName && <div className="mb-3" />}
 
         <div
-          className="text-5xl font-bold mb-3"
-          style={{ fontFamily: "'Press Start 2P', monospace", color: GOLD }}
+          className="text-5xl font-bold mb-3 text-[hsl(var(--gb-darkest))]"
+          style={{ fontFamily: "'Press Start 2P', monospace" }}
           data-testid="text-timer"
         >
           {formatTime(timeLeft)}
         </div>
 
-        <div className="w-full max-w-xs h-3 border-2 p-0.5 mb-3" style={{ borderColor: GOLD_DIM }}>
+        <div className="w-full max-w-xs h-3 border-2 p-0.5 mb-3 border-[hsl(var(--gb-dark))]">
           <div
-            className="h-full transition-all duration-1000"
-            style={{ width: `${(timeLeft / currentStep.duration) * 100}%`, background: GOLD }}
+            className="h-full transition-all duration-1000 bg-[hsl(var(--gb-darkest))]"
+            style={{ width: `${(timeLeft / currentStep.duration) * 100}%` }}
           />
         </div>
 
         <div className="flex gap-4 items-center">
           <button
             onClick={togglePause}
-            className="w-10 h-10 flex items-center justify-center border-2"
-            style={{ borderColor: GOLD, color: GOLD }}
+            className="w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-darkest))]"
             data-testid="button-pause"
           >
             {paused ? <Play size={18} /> : <Pause size={18} />}
           </button>
           <button
             onClick={toggleMute}
-            className="w-10 h-10 flex items-center justify-center border-2"
-            style={{ borderColor: GOLD, color: GOLD }}
+            className="w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-darkest))]"
             data-testid="button-mute"
           >
             {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
@@ -395,7 +381,7 @@ export default function Yoga() {
       </div>
 
       <div ref={listRef} className="flex-1 overflow-y-auto px-4 pb-4">
-        <div className="max-w-xs mx-auto border-2" style={{ borderColor: GOLD_DIM, background: `${GOLD_DARK}30` }}>
+        <div className="max-w-xs mx-auto border-2 border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-light)_/_0.2)]">
           {(() => {
             const sections = Array.from(new Set(EXERCISES_ONLY.map(e => e.section)));
             let globalIdx = 0;
@@ -405,8 +391,8 @@ export default function Yoga() {
 
               return (
                 <div key={section}>
-                  <div className="px-3 py-1.5 border-b" style={{ borderColor: `${GOLD_DIM}40` }}>
-                    <span className="text-[7px] font-bold uppercase tracking-widest" style={{ color: GOLD_DIM }}>
+                  <div className="px-3 py-1.5 border-b border-[hsl(var(--gb-dark)_/_0.25)]">
+                    <span className="text-[7px] font-bold uppercase tracking-widest text-[hsl(var(--gb-dark))]">
                       {section}
                     </span>
                   </div>
@@ -419,32 +405,27 @@ export default function Yoga() {
                       <div
                         key={idx}
                         ref={isActive ? activeRef : undefined}
-                        className="flex items-center gap-2 py-2 px-3 leading-tight transition-all duration-200"
-                        style={{
-                          background: isActive ? GOLD_DARK : 'transparent',
-                        }}
+                        className={`flex items-center gap-2 py-2 px-3 leading-tight transition-all duration-200 ${isActive ? 'bg-[hsl(var(--gb-light))]' : ''}`}
                         data-testid={`menu-exercise-${idx}`}
                       >
-                        <span className={`flex-shrink-0 w-3 font-bold text-[9px] ${isActive ? 'animate-pulse' : ''}`} style={{ color: GOLD, visibility: isActive ? 'visible' : 'hidden' }}>
+                        <span className={`flex-shrink-0 w-3 font-bold text-[9px] text-[hsl(var(--gb-darkest))] ${isActive ? 'animate-pulse' : ''}`} style={{ visibility: isActive ? 'visible' : 'hidden' }}>
                           {'>'}
                         </span>
                         <div className={`flex-1 flex flex-col truncate ${isDone && !isActive ? 'line-through' : ''}`} style={{ opacity: isDone && !isActive ? 0.35 : 1 }}>
                           <span
-                            className="text-[9px] font-bold uppercase truncate yoga-sanskrit-name"
-                            style={{ color: isActive ? GOLD : isDone ? `${GOLD_DIM}60` : GOLD_LIGHT }}
+                            className={`text-[9px] font-bold uppercase truncate ${isActive ? 'text-[hsl(var(--gb-darkest))]' : 'text-[hsl(var(--gb-darkest))]'}`}
                           >
                             {ex.sanskritName}
                           </span>
                           {ex.englishName && (
                             <span
-                              className="text-[7px] truncate yoga-english-name"
-                              style={{ color: isActive ? GOLD_DIM : GOLD_DARK, opacity: 0.6 }}
+                              className="text-[7px] truncate text-[hsl(var(--gb-dark))] opacity-60"
                             >
                               {ex.englishName}
                             </span>
                           )}
                         </div>
-                        <span className="flex-shrink-0 text-[8px]" style={{ color: isActive ? GOLD_DIM : GOLD_DARK }}>
+                        <span className={`flex-shrink-0 text-[8px] ${isActive ? 'text-[hsl(var(--gb-dark))]' : 'text-[hsl(var(--gb-dark)_/_0.6)]'}`}>
                           {formatTime(ex.duration)}
                         </span>
                       </div>
