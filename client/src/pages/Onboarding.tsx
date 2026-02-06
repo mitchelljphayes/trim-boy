@@ -53,7 +53,7 @@ export default function Onboarding() {
                 value={name}
                 onChange={(e) => setName(e.target.value.toUpperCase().slice(0, 8))}
                 placeholder="PLAYER 1"
-                className="w-full p-4 bg-[hsl(var(--gb-lightest))] border-4 border-[hsl(var(--gb-dark))] text-[hsl(var(--gb-darkest))] font-bold outline-none focus:bg-white placeholder-[hsl(var(--gb-dark))]/50"
+                className="w-full p-4 bg-[hsl(var(--gb-lightest))] border-4 border-[hsl(var(--gb-dark))] text-[hsl(var(--gb-darkest))] font-bold outline-none focus:bg-[hsl(var(--gb-light))] placeholder-[hsl(var(--gb-dark))]/50"
                 autoFocus
               />
               <p className="text-[10px] text-right text-[hsl(var(--gb-dark))]">
