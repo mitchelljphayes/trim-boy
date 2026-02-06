@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Star } from "lucide-react";
 import { useAllLogs } from "@/hooks/use-trim";
 import { format, parseISO, startOfWeek } from "date-fns";
 
+const CATEGORIES = ['all', 'strength', 'run', 'surf', 'maint', 'breath'] as const;
+type CategoryFilter = typeof CATEGORIES[number];
+
 const CATEGORY_LABELS: Record<string, string> = {
-  strength: "STRENGTH",
+  all: "ALL",
+  strength: "STR",
   run: "RUN",
   surf: "SURF",
   maint: "MAINT",
@@ -18,6 +22,14 @@ const CATEGORY_ICONS: Record<string, string> = {
   surf: "[SRF]",
   maint: "[MNT]",
   breath: "[BRE]",
+};
+
+const CATEGORY_FULL: Record<string, string> = {
+  strength: "STRENGTH",
+  run: "RUN",
+  surf: "SURF",
+  maint: "MAINT",
+  breath: "BREATH",
 };
 
 interface LogEntry {
@@ -62,9 +74,48 @@ function groupLogsByWeek(logs: LogEntry[]): WeekGroup[] {
   return groups.sort((a, b) => b.weekStart.localeCompare(a.weekStart));
 }
 
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-[2px]">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <Star
+          key={s}
+          size={10}
+          className={s <= rating ? 'fill-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-darkest))]' : 'text-[hsl(var(--gb-dark))]/30'}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SurfDetail({ meta }: { meta: Record<string, unknown> }) {
+  return (
+    <div className="text-[8px] text-[hsl(var(--gb-dark))] flex flex-wrap gap-x-3 gap-y-[2px] mt-[2px]">
+      {meta.location && <span>LOC: {String(meta.location).toUpperCase()}</span>}
+      {meta.timeSurf && <span>TIME: {String(meta.timeSurf)}MIN</span>}
+      {meta.enjoyment && typeof meta.enjoyment === 'number' && (
+        <span className="flex items-center gap-1">RATING: <StarRating rating={meta.enjoyment} /></span>
+      )}
+    </div>
+  );
+}
+
+function RunDetail({ meta }: { meta: Record<string, unknown> }) {
+  return (
+    <div className="text-[8px] text-[hsl(var(--gb-dark))] flex flex-wrap gap-x-3 gap-y-[2px] mt-[2px]">
+      {meta.distance && <span>DIST: {String(meta.distance)}KM</span>}
+      {meta.pace && <span>PACE: {String(meta.pace)}/KM</span>}
+      {meta.enjoyment && typeof meta.enjoyment === 'number' && (
+        <span className="flex items-center gap-1">RATING: <StarRating rating={meta.enjoyment} /></span>
+      )}
+    </div>
+  );
+}
+
 export default function Archive() {
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<number | null>(null);
+  const [filter, setFilter] = useState<CategoryFilter>('all');
 
   useEffect(() => {
     const storedId = localStorage.getItem("trim_user_id");
@@ -77,11 +128,17 @@ export default function Archive() {
 
   const { data: logs, isLoading } = useAllLogs(userId);
 
-  const weekGroups = logs ? groupLogsByWeek(logs as LogEntry[]) : [];
+  const filteredLogs = logs
+    ? (filter === 'all' ? logs : logs.filter((l) => l.category === filter)) as LogEntry[]
+    : [];
+
+  const weekGroups = groupLogsByWeek(filteredLogs);
+
+  const totalCount = logs ? logs.length : 0;
 
   return (
     <div className="min-h-screen bg-[hsl(var(--gb-lightest))] p-4 pb-20 max-w-xl mx-auto">
-      <header className="flex items-center gap-3 mb-6 pt-2 border-b-4 border-[hsl(var(--gb-dark))] pb-2">
+      <header className="flex items-center gap-3 mb-4 pt-2 border-b-4 border-[hsl(var(--gb-dark))] pb-2">
         <button
           onClick={() => setLocation("/dashboard")}
           className="p-2 hover:bg-[hsl(var(--gb-light))] border-2 border-transparent hover:border-[hsl(var(--gb-dark))] transition-colors"
@@ -99,6 +156,23 @@ export default function Archive() {
         </div>
       </header>
 
+      <div className="flex flex-wrap gap-1 mb-4" data-testid="filter-bar">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setFilter(cat)}
+            className={`px-2 py-1 text-[8px] font-bold uppercase tracking-wider border-2 transition-colors ${
+              filter === cat
+                ? 'bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))] border-[hsl(var(--gb-darkest))]'
+                : 'bg-[hsl(var(--gb-light))] text-[hsl(var(--gb-darkest))] border-[hsl(var(--gb-dark))] hover:bg-[hsl(var(--gb-medium))]'
+            }`}
+            data-testid={`filter-${cat}`}
+          >
+            {CATEGORY_LABELS[cat]}
+          </button>
+        ))}
+      </div>
+
       <main>
         {isLoading && (
           <div className="text-center py-12">
@@ -111,10 +185,10 @@ export default function Archive() {
         {!isLoading && weekGroups.length === 0 && (
           <div className="text-center py-12 border-4 border-dashed border-[hsl(var(--gb-dark))]/30 p-6">
             <p className="text-xs text-[hsl(var(--gb-dark))]" data-testid="text-empty">
-              NO LOGS RECORDED YET
+              {filter === 'all' ? 'NO LOGS RECORDED YET' : `NO ${CATEGORY_LABELS[filter]} LOGS FOUND`}
             </p>
             <p className="text-[8px] text-[hsl(var(--gb-dark))]/60 mt-2">
-              COMPLETE ACTIVITIES TO BUILD YOUR ARCHIVE
+              {filter === 'all' ? 'COMPLETE ACTIVITIES TO BUILD YOUR ARCHIVE' : 'TRY A DIFFERENT FILTER'}
             </p>
           </div>
         )}
@@ -130,10 +204,9 @@ export default function Archive() {
             </div>
 
             <div className="border-4 border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-light))]">
-              <div className="grid grid-cols-[60px_1fr_auto] text-[8px] font-bold text-[hsl(var(--gb-darkest))] border-b-2 border-[hsl(var(--gb-dark))] px-2 py-1 bg-[hsl(var(--gb-medium))]">
+              <div className="grid grid-cols-[56px_1fr] text-[8px] font-bold text-[hsl(var(--gb-darkest))] border-b-2 border-[hsl(var(--gb-dark))] px-2 py-1 bg-[hsl(var(--gb-medium))]">
                 <span>DATE</span>
                 <span>ACTIVITY</span>
-                <span>INFO</span>
               </div>
 
               {week.logs.map((log, li) => {
@@ -141,33 +214,28 @@ export default function Archive() {
                 const dayStr = format(dateObj, "EEE").toUpperCase();
                 const dateStr = format(dateObj, "MM/dd");
                 const meta = log.metadata as Record<string, unknown> | null;
-                let infoStr = "";
-                if (meta) {
-                  if (meta.spot) infoStr = String(meta.spot);
-                  if (meta.distance) infoStr = `${meta.distance}km`;
-                  if (meta.duration) infoStr = `${meta.duration}min`;
-                }
 
                 return (
                   <div
                     key={log.id}
-                    className={`grid grid-cols-[60px_1fr_auto] text-[9px] px-2 py-[6px] items-center gap-1 ${li % 2 === 0 ? 'bg-[hsl(var(--gb-light))]' : 'bg-[hsl(var(--gb-lightest))]'}`}
+                    className={`grid grid-cols-[56px_1fr] text-[9px] px-2 py-[6px] items-start gap-1 ${li % 2 === 0 ? 'bg-[hsl(var(--gb-light))]' : 'bg-[hsl(var(--gb-lightest))]'}`}
                     data-testid={`log-entry-${log.id}`}
                   >
-                    <div className="text-[hsl(var(--gb-dark))]">
-                      <span className="font-bold text-[hsl(var(--gb-darkest))]">{dayStr}</span>
-                      <span className="ml-1 text-[7px]">{dateStr}</span>
+                    <div className="text-[hsl(var(--gb-dark))] pt-[1px]">
+                      <div className="font-bold text-[hsl(var(--gb-darkest))]">{dayStr}</div>
+                      <div className="text-[7px]">{dateStr}</div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-[8px] text-[hsl(var(--gb-dark))]">
-                        {CATEGORY_ICONS[log.category] || `[${log.category.substring(0, 3).toUpperCase()}]`}
-                      </span>
-                      <span className="font-bold text-[hsl(var(--gb-darkest))]">
-                        {CATEGORY_LABELS[log.category] || log.category.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="text-[8px] text-[hsl(var(--gb-dark))] text-right truncate max-w-[80px]">
-                      {infoStr || "-"}
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[8px] text-[hsl(var(--gb-dark))]">
+                          {CATEGORY_ICONS[log.category] || `[${log.category.substring(0, 3).toUpperCase()}]`}
+                        </span>
+                        <span className="font-bold text-[hsl(var(--gb-darkest))]">
+                          {CATEGORY_FULL[log.category] || log.category.toUpperCase()}
+                        </span>
+                      </div>
+                      {log.category === 'surf' && meta && <SurfDetail meta={meta} />}
+                      {log.category === 'run' && meta && <RunDetail meta={meta} />}
                     </div>
                   </div>
                 );
@@ -189,8 +257,8 @@ export default function Archive() {
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))] text-[10px] p-2 flex justify-between px-4 z-50">
-        <span>ARCHIVE MODE</span>
-        <span>{weekGroups.length} WEEK{weekGroups.length !== 1 ? 'S' : ''} LOGGED</span>
+        <span>ARCHIVE MODE{filter !== 'all' ? ` / ${CATEGORY_LABELS[filter]}` : ''}</span>
+        <span>{totalCount} TOTAL LOG{totalCount !== 1 ? 'S' : ''}</span>
       </div>
     </div>
   );
