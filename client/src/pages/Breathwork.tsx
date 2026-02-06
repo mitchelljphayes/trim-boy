@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { useCreateLog } from '@/hooks/use-trim';
 import { useAudio } from '@/hooks/use-audio';
 import { RetroButton } from '@/components/RetroButton';
-import { ArrowLeft, VolumeX, Volume2 } from 'lucide-react';
+import { ArrowLeft, VolumeX, Volume2, X } from 'lucide-react';
 
 const CYCLE_DURATION = 16;
 const PHASE_DURATION = 4;
@@ -258,13 +258,22 @@ export default function Breathwork() {
         <p className="text-[9px] text-[hsl(var(--gb-light))] uppercase tracking-widest" data-testid="text-remaining">
           {formatTime(remaining)}
         </p>
-        <button
-          onClick={toggleMute}
-          className="w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-light))] text-[hsl(var(--gb-light))]"
-          data-testid="button-mute"
-        >
-          {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={toggleMute}
+            className="w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-light))] text-[hsl(var(--gb-light))]"
+            data-testid="button-mute"
+          >
+            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+          <button
+            onClick={() => setLocation('/dashboard')}
+            className="w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-light))] text-[hsl(var(--gb-light))]"
+            data-testid="button-exit"
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center">

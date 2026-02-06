@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { useCreateLog } from '@/hooks/use-trim';
 import { useAudio } from '@/hooks/use-audio';
 import { RetroButton } from '@/components/RetroButton';
-import { ArrowLeft, Pause, Play, VolumeX, Volume2 } from 'lucide-react';
+import { ArrowLeft, Pause, Play, VolumeX, Volume2, X } from 'lucide-react';
 
 export interface RoutineConfig {
   title: string;
@@ -21,6 +21,8 @@ interface Step {
   label: string;
   duration: number;
   type: 'intro' | 'work' | 'rest' | 'cooldown';
+  exerciseIndex?: number;
+  round?: number;
 }
 
 function buildSteps(config: RoutineConfig): Step[] {
@@ -29,11 +31,11 @@ function buildSteps(config: RoutineConfig): Step[] {
 
   for (let r = 0; r < config.rounds; r++) {
     for (let e = 0; e < config.exercises.length; e++) {
-      steps.push({ label: config.exercises[e], duration: config.workDuration, type: 'work' });
+      steps.push({ label: config.exercises[e], duration: config.workDuration, type: 'work', exerciseIndex: e, round: r });
       const isLastExInRound = e === config.exercises.length - 1;
       const isLastRound = r === config.rounds - 1;
       if (config.restDuration > 0 && !(isLastExInRound && isLastRound)) {
-        steps.push({ label: 'REST', duration: config.restDuration, type: 'rest' });
+        steps.push({ label: 'REST', duration: config.restDuration, type: 'rest', exerciseIndex: e, round: r });
       }
     }
   }
@@ -68,6 +70,9 @@ export default function TimerPage(config: RoutineConfig) {
   const isCooldown = currentStep?.type === 'cooldown';
   const isIntro = currentStep?.type === 'intro';
 
+  const currentRound = currentStep?.round ?? 0;
+  const currentExerciseIndex = currentStep?.exerciseIndex ?? -1;
+
   const lastWorkStepIndex = (() => {
     for (let i = steps.length - 1; i >= 0; i--) {
       if (steps[i].type === 'work') return i;
@@ -79,6 +84,10 @@ export default function TimerPage(config: RoutineConfig) {
     const m = Math.floor(s / 60);
     const sec = s % 60;
     return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const exitRoutine = () => {
+    setLocation(redirectTo || '/dashboard');
   };
 
   const startRoutine = () => {
@@ -210,6 +219,14 @@ export default function TimerPage(config: RoutineConfig) {
   if (isCooldown) {
     return (
       <div className="min-h-screen bg-[hsl(var(--gb-darkest))] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <button
+          onClick={exitRoutine}
+          className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center border-2 border-[hsl(var(--gb-light))] text-[hsl(var(--gb-light))]"
+          data-testid="button-exit"
+        >
+          <X size={18} />
+        </button>
+
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
           <pre
             className="text-[hsl(var(--gb-dark))]/20 text-[10px] leading-tight text-center animate-pulse"
@@ -275,7 +292,7 @@ export default function TimerPage(config: RoutineConfig) {
     );
   }
 
-  // === ACTIVE TIMER UI (work / rest / intro - step list style) ===
+  // === ACTIVE TIMER UI ===
   const isDark = isRest || isIntro;
   const bgClass = isDark ? 'bg-[hsl(var(--gb-darkest))]' : 'bg-[hsl(var(--gb-lightest))]';
   const textClass = isDark ? 'text-[hsl(var(--gb-lightest))]' : 'text-[hsl(var(--gb-darkest))]';
@@ -283,12 +300,22 @@ export default function TimerPage(config: RoutineConfig) {
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${bgClass}`}>
-      {/* Top Zone - Timer + Current Exercise */}
-      <div className="flex-shrink-0 flex flex-col items-center pt-6 pb-3 px-4">
-        <p className={`text-[9px] uppercase tracking-widest mb-1 ${textSub}`} data-testid="text-phase">
+      {/* Top bar: phase + exit */}
+      <div className="flex-shrink-0 flex items-center justify-between px-4 pt-4">
+        <p className={`text-[9px] uppercase tracking-widest ${textSub}`} data-testid="text-phase">
           {isIntro ? 'GET READY' : isRest ? 'REST' : 'WORK'}
         </p>
+        <button
+          onClick={exitRoutine}
+          className={`w-10 h-10 flex items-center justify-center border-2 border-current ${textSub}`}
+          data-testid="button-exit"
+        >
+          <X size={18} />
+        </button>
+      </div>
 
+      {/* Timer + Current Exercise */}
+      <div className="flex-shrink-0 flex flex-col items-center pb-3 px-4">
         <h2 className={`text-xs font-bold mb-3 uppercase text-center ${textClass}`} data-testid="text-exercise">
           {currentStep.label}
         </h2>
@@ -300,12 +327,6 @@ export default function TimerPage(config: RoutineConfig) {
         >
           {formatTime(timeLeft)}
         </div>
-
-        {rounds > 1 && (
-          <p className={`text-[8px] uppercase tracking-widest mb-2 ${textSub}`} data-testid="text-round">
-            ROUND {Math.min(Math.floor(currentStepIndex / (exercises.length * 2)) + 1, rounds)}/{rounds}
-          </p>
-        )}
 
         {/* Progress bar */}
         <div className="w-full max-w-xs h-3 border-2 border-[hsl(var(--gb-dark))] p-0.5 mb-3">
@@ -333,36 +354,64 @@ export default function TimerPage(config: RoutineConfig) {
         </div>
       </div>
 
-      {/* Bottom Zone - Step List */}
-      <div ref={listRef} className="flex-1 overflow-y-auto px-3 pb-4">
-        <div className="max-w-md mx-auto">
-          {steps.map((step, i) => {
-            const isActive = i === currentStepIndex;
-            const isDone = i < currentStepIndex;
+      {/* Game Boy Menu - Exercise list (no rest rows) */}
+      <div ref={listRef} className="flex-1 overflow-y-auto px-4 pb-4">
+        <div className="max-w-xs mx-auto border-2 border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-light))]">
+          {/* Set counter header */}
+          {rounds > 1 && (
+            <div className="border-b-2 border-[hsl(var(--gb-dark))] px-3 py-2 text-center" data-testid="text-round">
+              <span className="text-[9px] font-bold text-[hsl(var(--gb-darkest))] uppercase tracking-widest">
+                SET {currentRound + 1}/{rounds}
+              </span>
+            </div>
+          )}
+
+          {/* Exercise menu items */}
+          {exercises.map((ex, i) => {
+            const isActiveEx = !isIntro && currentExerciseIndex === i;
+            const isDoneInRound = !isIntro && (
+              currentExerciseIndex > i || 
+              (isRest && currentExerciseIndex >= i)
+            );
 
             return (
               <div
                 key={i}
-                ref={isActive ? activeRef : undefined}
-                className={`flex items-center gap-2 py-1.5 px-2 text-[8px] leading-tight transition-all duration-200 ${
-                  isActive
+                ref={isActiveEx ? activeRef : undefined}
+                className={`flex items-center gap-2 py-2 px-3 text-[9px] leading-tight transition-all duration-200 ${
+                  isActiveEx
                     ? 'bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))]'
-                    : isDone
-                      ? `${textSub}/30`
-                      : textSub
+                    : isDoneInRound
+                      ? 'text-[hsl(var(--gb-dark))]/40'
+                      : 'text-[hsl(var(--gb-darkest))]'
                 }`}
-                data-testid={`step-${i}`}
+                data-testid={`menu-exercise-${i}`}
               >
-                <span className={`flex-shrink-0 w-3 font-bold ${isActive ? 'animate-pulse' : 'invisible'}`}>
+                <span className={`flex-shrink-0 w-3 font-bold ${isActiveEx ? 'animate-pulse' : 'invisible'}`}>
                   {'>'}
                 </span>
-                <span className={`flex-1 truncate ${isDone ? 'line-through opacity-40' : ''}`}>
-                  {step.label}
+                <span className={`flex-1 truncate uppercase font-bold ${isDoneInRound && !isActiveEx ? 'line-through opacity-40' : ''}`}>
+                  {ex}
                 </span>
-                <span className="flex-shrink-0">{formatTime(step.duration)}</span>
+                <span className={`flex-shrink-0 text-[8px] ${isActiveEx ? 'text-[hsl(var(--gb-light))]' : 'text-[hsl(var(--gb-dark))]'}`}>
+                  {workDuration}s
+                </span>
               </div>
             );
           })}
+
+          {/* Savasana loading at bottom */}
+          {cooldown && (
+            <div className="border-t-2 border-[hsl(var(--gb-dark))]/30 px-3 py-2 flex items-center gap-2" data-testid="menu-cooldown">
+              <span className="text-[8px] text-[hsl(var(--gb-dark))]/50 uppercase tracking-wider animate-pulse">
+                {'>'} {cooldown.label}
+              </span>
+              <span className="flex-1" />
+              <span className="text-[7px] text-[hsl(var(--gb-dark))]/40">
+                {formatTime(cooldown.duration)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
