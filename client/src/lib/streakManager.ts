@@ -3,6 +3,15 @@ import { startOfWeek, format, differenceInCalendarWeeks } from 'date-fns';
 const STREAK_KEY = 'trim_streak_count';
 const STREAK_WEEK_KEY = 'trim_streak_week';
 const STREAK_CELEBRATED_KEY = 'trim_streak_celebrated';
+const MILESTONES_KEY = 'trim_milestones';
+const MASTERY_COUNT_KEY = 'trim_mastery_total';
+
+export interface Milestone {
+  date: string;
+  achievement: string;
+  status: string;
+  weekId: string;
+}
 
 function getCurrentWeekId(): string {
   return format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -27,6 +36,46 @@ export function getStreak(): number {
   }
 
   return parseInt(localStorage.getItem(STREAK_KEY) || '0', 10);
+}
+
+export function getMilestones(): Milestone[] {
+  try {
+    return JSON.parse(localStorage.getItem(MILESTONES_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+export function getTotalMastery(): number {
+  return parseInt(localStorage.getItem(MASTERY_COUNT_KEY) || '0', 10);
+}
+
+export function getGoldWeekIds(): Set<string> {
+  const milestones = getMilestones();
+  return new Set(milestones.filter(m => m.achievement === 'GOLD_STATUS').map(m => m.weekId));
+}
+
+export function hasEverReachedGold(): boolean {
+  return getMilestones().some(m => m.achievement === 'GOLD_STATUS');
+}
+
+function logMilestone(weekId: string) {
+  const milestones = getMilestones();
+  const alreadyLogged = milestones.some(m => m.weekId === weekId && m.achievement === 'GOLD_STATUS');
+  if (alreadyLogged) return;
+
+  milestones.push({
+    date: new Date().toISOString(),
+    achievement: 'GOLD_STATUS',
+    status: 'MASTERED',
+    weekId,
+  });
+  localStorage.setItem(MILESTONES_KEY, JSON.stringify(milestones));
+}
+
+function incrementMastery() {
+  const current = getTotalMastery();
+  localStorage.setItem(MASTERY_COUNT_KEY, String(current + 1));
 }
 
 export function checkAndUpdateStreak(strengthCount: number, runCount: number): {
@@ -60,6 +109,12 @@ export function checkAndUpdateStreak(strengthCount: number, runCount: number): {
   localStorage.setItem(STREAK_KEY, String(currentStreak));
   localStorage.setItem(STREAK_WEEK_KEY, weekId);
   localStorage.setItem(STREAK_CELEBRATED_KEY, weekId);
+
+  incrementMastery();
+
+  if (currentStreak >= 2) {
+    logMilestone(weekId);
+  }
 
   return { streak: currentStreak, justCompleted: true };
 }

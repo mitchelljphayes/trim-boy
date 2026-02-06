@@ -3,6 +3,9 @@ import { useLocation } from "wouter";
 import { ArrowLeft, Star } from "lucide-react";
 import { useAllLogs } from "@/hooks/use-trim";
 import { format, parseISO, startOfWeek } from "date-fns";
+import { getMilestones, getTotalMastery, hasEverReachedGold, getGoldWeekIds } from "@/lib/streakManager";
+import type { Milestone } from "@/lib/streakManager";
+import goldTrimBoy from "@assets/trimboy_gold_1770407871261.png";
 
 const CATEGORIES = ['all', 'strength', 'run', 'surf', 'maint', 'breath'] as const;
 type CategoryFilter = typeof CATEGORIES[number];
@@ -44,9 +47,10 @@ interface WeekGroup {
   weekLabel: string;
   weekStart: string;
   logs: LogEntry[];
+  isGoldWeek: boolean;
 }
 
-function groupLogsByWeek(logs: LogEntry[]): WeekGroup[] {
+function groupLogsByWeek(logs: LogEntry[], goldWeeks: Set<string>): WeekGroup[] {
   const weeks = new Map<string, LogEntry[]>();
 
   logs.forEach((log) => {
@@ -68,6 +72,7 @@ function groupLogsByWeek(logs: LogEntry[]): WeekGroup[] {
       weekLabel: `${format(startDate, "MMM d").toUpperCase()} - ${format(endDate, "MMM d").toUpperCase()}`,
       weekStart,
       logs: weekLogs.sort((a, b) => a.date.localeCompare(b.date)),
+      isGoldWeek: goldWeeks.has(weekStart),
     });
   });
 
@@ -85,6 +90,15 @@ function StarRating({ rating }: { rating: number }) {
         />
       ))}
     </div>
+  );
+}
+
+function FalconIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="inline-block flex-shrink-0">
+      <path d="M8 1L10 3L12 2L11 5L13 7L10 7L9 10L8 8L7 10L6 7L3 7L5 5L4 2L6 3L8 1Z" fill="#FFD700" stroke="#B8860B" strokeWidth="0.5" />
+      <path d="M7 10L8 13L9 10" fill="#B8860B" />
+    </svg>
   );
 }
 
@@ -118,6 +132,78 @@ function RunDetail({ meta }: { meta: Record<string, unknown> }) {
   );
 }
 
+function HallOfFame({ milestones, totalMastery }: { milestones: Milestone[]; totalMastery: number }) {
+  const goldMilestones = milestones.filter(m => m.achievement === 'GOLD_STATUS');
+
+  return (
+    <div className="mb-6 border-4 border-[#B8860B] p-4" style={{ background: '#2d1b33' }} data-testid="hall-of-fame">
+      <div className="flex flex-col items-center mb-4">
+        <h2 className="text-sm font-bold mb-3 tracking-widest" style={{ color: '#FFD700' }} data-testid="text-hall-title">
+          HALL OF FAME
+        </h2>
+        <img
+          src={goldTrimBoy}
+          alt="Golden TrimBoy - Lifetime Achievement"
+          className="w-24 h-auto pixelated mb-2"
+          style={{ imageRendering: 'pixelated' }}
+          data-testid="img-hall-of-fame-sprite"
+        />
+        <p className="text-[7px] uppercase tracking-widest" style={{ color: '#B8860B' }}>
+          Lifetime Achievement
+        </p>
+      </div>
+
+      <div className="flex justify-between items-center mb-3 px-1 border-b pb-2" style={{ borderColor: '#B8860B40' }}>
+        <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: '#FFD700' }}>
+          Total Mastery
+        </span>
+        <span className="text-[10px] font-bold" style={{ color: '#FFD700' }} data-testid="text-total-mastery">
+          {totalMastery} WEEK{totalMastery !== 1 ? 'S' : ''}
+        </span>
+      </div>
+
+      <div className="mb-1 px-1">
+        <span className="text-[7px] font-bold uppercase tracking-widest" style={{ color: '#B8860B' }}>
+          Gold Weeks
+        </span>
+      </div>
+
+      <div className="max-h-32 overflow-y-auto" data-testid="gold-weeks-list">
+        {goldMilestones.length === 0 ? (
+          <p className="text-[8px] px-1 py-2" style={{ color: '#B8860B80' }}>
+            NO GOLD WEEKS RECORDED YET
+          </p>
+        ) : (
+          goldMilestones.map((m, i) => {
+            const date = new Date(m.date);
+            const weekStart = parseISO(m.weekId);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            return (
+              <div
+                key={i}
+                className="flex items-center justify-between py-1.5 px-1"
+                style={{ borderBottom: i < goldMilestones.length - 1 ? '1px solid #B8860B30' : 'none' }}
+                data-testid={`gold-week-${i}`}
+              >
+                <div className="flex items-center gap-2">
+                  <FalconIcon size={10} />
+                  <span className="text-[8px] font-bold" style={{ color: '#FFD700' }}>
+                    {format(weekStart, "MMM d").toUpperCase()} - {format(weekEnd, "MMM d").toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-[7px]" style={{ color: '#B8860B' }}>
+                  {format(date, "MM/dd/yy")}
+                </span>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Archive() {
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<number | null>(null);
@@ -134,11 +220,16 @@ export default function Archive() {
 
   const { data: logs, isLoading } = useAllLogs(userId);
 
+  const milestones = getMilestones();
+  const totalMastery = getTotalMastery();
+  const showHallOfFame = hasEverReachedGold();
+  const goldWeeks = getGoldWeekIds();
+
   const filteredLogs = logs
     ? (filter === 'all' ? logs : logs.filter((l) => l.category === filter)) as LogEntry[]
     : [];
 
-  const weekGroups = groupLogsByWeek(filteredLogs);
+  const weekGroups = groupLogsByWeek(filteredLogs, goldWeeks);
 
   const totalCount = logs ? logs.length : 0;
 
@@ -161,6 +252,10 @@ export default function Archive() {
           </span>
         </div>
       </header>
+
+      {showHallOfFame && (
+        <HallOfFame milestones={milestones} totalMastery={totalMastery} />
+      )}
 
       <div className="flex flex-wrap gap-1 mb-4" data-testid="filter-bar">
         {CATEGORIES.map((cat) => (
@@ -203,16 +298,21 @@ export default function Archive() {
           <div key={week.weekStart} className="mb-6" data-testid={`week-group-${wi}`}>
             <div className="flex items-center gap-2 mb-2">
               <div className="h-[2px] flex-1 bg-[hsl(var(--gb-dark))]/30" />
-              <span className="text-[9px] font-bold text-[hsl(var(--gb-darkest))] tracking-wider whitespace-nowrap" data-testid={`text-week-${wi}`}>
+              <span className="text-[9px] font-bold text-[hsl(var(--gb-darkest))] tracking-wider whitespace-nowrap flex items-center gap-1.5" data-testid={`text-week-${wi}`}>
+                {week.isGoldWeek && <FalconIcon size={11} />}
                 {week.weekLabel}
+                {week.isGoldWeek && <FalconIcon size={11} />}
               </span>
               <div className="h-[2px] flex-1 bg-[hsl(var(--gb-dark))]/30" />
             </div>
 
-            <div className="border-4 border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-light))]">
-              <div className="grid grid-cols-[56px_1fr] text-[8px] font-bold text-[hsl(var(--gb-darkest))] border-b-2 border-[hsl(var(--gb-dark))] px-2 py-1 bg-[hsl(var(--gb-dark))]/20">
+            <div className={`border-4 bg-[hsl(var(--gb-light))] ${week.isGoldWeek ? 'border-[#B8860B]' : 'border-[hsl(var(--gb-dark))]'}`}>
+              <div className={`grid grid-cols-[56px_1fr] text-[8px] font-bold text-[hsl(var(--gb-darkest))] border-b-2 px-2 py-1 ${week.isGoldWeek ? 'border-[#B8860B]/40 bg-[#B8860B]/10' : 'border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-dark))]/20'}`}>
                 <span>DATE</span>
-                <span>ACTIVITY</span>
+                <span className="flex items-center gap-1">
+                  ACTIVITY
+                  {week.isGoldWeek && <span className="text-[7px]" style={{ color: '#FFD700' }}>GOLD WEEK</span>}
+                </span>
               </div>
 
               {week.logs.map((log, li) => {
@@ -239,6 +339,7 @@ export default function Archive() {
                         <span className="font-bold text-[hsl(var(--gb-darkest))]">
                           {CATEGORY_FULL[log.category] || log.category.toUpperCase()}
                         </span>
+                        {week.isGoldWeek && <FalconIcon size={10} />}
                       </div>
                       {log.category === 'surf' && meta && <SurfDetail meta={meta} />}
                       {log.category === 'run' && meta && <RunDetail meta={meta} />}
@@ -247,7 +348,7 @@ export default function Archive() {
                 );
               })}
 
-              <div className="border-t-2 border-[hsl(var(--gb-dark))] px-2 py-1 bg-[hsl(var(--gb-dark))]/20 text-[8px] text-[hsl(var(--gb-darkest))] flex justify-between flex-wrap gap-1">
+              <div className={`border-t-2 px-2 py-1 text-[8px] text-[hsl(var(--gb-darkest))] flex justify-between flex-wrap gap-1 ${week.isGoldWeek ? 'border-[#B8860B]/40 bg-[#B8860B]/10' : 'border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-dark))]/20'}`}>
                 <span>{week.logs.length} ENTRIES</span>
                 <span>
                   {(['strength', 'run', 'surf', 'maint', 'breath'] as const).map(cat => {
