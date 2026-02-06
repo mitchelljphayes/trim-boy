@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { FolderArchive } from "lucide-react";
+import { FolderArchive, Star } from "lucide-react";
 import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
 import { PowerCells } from "@/components/PowerCells";
 import { HabitGrid } from "@/components/HabitGrid";
 import { RetroButton } from "@/components/RetroButton";
 import { isRecharging } from "@/pages/Recharge";
+import { hasYogaToday } from "@/pages/Yoga";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<number | null>(null);
   const [userName, setUserName] = useState<string>("");
   const [recharging, setRechargingState] = useState(isRecharging);
+  const [yogaStar, setYogaStar] = useState(hasYogaToday);
 
   useEffect(() => {
     const storedId = localStorage.getItem("trim_user_id");
@@ -30,6 +32,12 @@ export default function Dashboard() {
     const handler = () => setRechargingState(isRecharging());
     window.addEventListener('recharge-status-change', handler);
     return () => window.removeEventListener('recharge-status-change', handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setYogaStar(hasYogaToday());
+    window.addEventListener('yoga-status-change', handler);
+    return () => window.removeEventListener('yoga-status-change', handler);
   }, []);
 
   const { data: stats } = useWeeklyStats(userId);
@@ -68,7 +76,22 @@ export default function Dashboard() {
           runCount={stats?.runCount || 0} 
         />
 
-        <HabitGrid habits={stats?.habits || []} />
+        <div className="flex items-start gap-3">
+          <div className="flex-1">
+            <HabitGrid habits={stats?.habits || []} />
+          </div>
+          {yogaStar && (
+            <div
+              className="flex flex-col items-center pt-10 flex-shrink-0"
+              data-testid="yoga-gold-star"
+            >
+              <Star size={28} fill="#FFD700" color="#FFD700" strokeWidth={1.5} />
+              <span className="text-[7px] mt-1 uppercase tracking-widest text-[hsl(var(--gb-dark))]">
+                BONUS
+              </span>
+            </div>
+          )}
+        </div>
 
         <div className="space-y-3 mt-8">
           <h3 className="text-xs mb-4 text-[hsl(var(--gb-darkest))] uppercase tracking-widest text-center">
@@ -108,6 +131,18 @@ export default function Dashboard() {
               className="opacity-75 hover:opacity-100"
             >
               6. RECHARGE
+            </RetroButton>
+          </div>
+
+          <div className="pt-2">
+            <RetroButton
+              onClick={() => setLocation('/yoga')}
+              fullWidth
+              disabled={isPending}
+              style={{ background: '#8B7300', color: '#FFF3C4', borderColor: '#FFD700' }}
+              data-testid="button-yoga"
+            >
+              BONUS: ASHTANGA FLOW
             </RetroButton>
           </div>
         </div>

@@ -20,6 +20,7 @@ import RunCooldown from "@/pages/RunCooldown";
 import RunLog from "@/pages/RunLog";
 import Breathwork from "@/pages/Breathwork";
 import Recharge from "@/pages/Recharge";
+import Yoga from "@/pages/Yoga";
 
 function Router() {
   const [userName] = useState(() => localStorage.getItem("trim_user_name"));
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/run/log" component={RunLog} />
       <Route path="/breathwork" component={Breathwork} />
       <Route path="/recharge" component={Recharge} />
+      <Route path="/yoga" component={Yoga} />
       <Route component={NotFound} />
     </Switch>
   );
