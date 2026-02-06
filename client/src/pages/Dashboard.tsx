@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { FolderArchive, Star } from "lucide-react";
+import { HardwareToggle } from "@/components/HardwareToggle";
 import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
 import { PowerCells } from "@/components/PowerCells";
 import { HabitGrid } from "@/components/HabitGrid";
@@ -53,20 +54,21 @@ export default function Dashboard() {
           <span className="text-[10px] text-[hsl(var(--gb-dark))] mb-1">OPERATOR ID</span>
           <span className="text-xl font-bold text-[hsl(var(--gb-darkest))]">{userName}</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           <span
-            className={`text-[8px] uppercase tracking-widest ${recharging ? 'text-[hsl(var(--gb-dark))] animate-pulse' : 'text-[hsl(var(--gb-dark))]/50'}`}
+            className={`text-[8px] uppercase tracking-widest mr-1 ${recharging ? 'text-[hsl(var(--gb-dark))] animate-pulse' : 'text-[hsl(var(--gb-dark))]/50'}`}
             data-testid="text-system-status"
           >
-            {recharging ? 'SYSTEM: RECHARGING' : 'SYSTEM: ACTIVE'}
+            {recharging ? 'SYS:RCH' : 'SYS:ON'}
           </span>
+          <HardwareToggle />
           <button 
             className="p-2 hover:bg-[hsl(var(--gb-light))] border-2 border-transparent hover:border-[hsl(var(--gb-dark))] transition-colors"
             title="Archive"
             onClick={() => setLocation('/archive')}
             data-testid="button-archive"
           >
-            <FolderArchive className="w-6 h-6 text-[hsl(var(--gb-darkest))]" />
+            <FolderArchive className="w-5 h-5 text-[hsl(var(--gb-darkest))]" />
           </button>
         </div>
       </header>

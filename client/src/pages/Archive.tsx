@@ -89,24 +89,30 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 function SurfDetail({ meta }: { meta: Record<string, unknown> }) {
+  const loc = meta.location ? String(meta.location).toUpperCase() : null;
+  const time = meta.timeSurf ? String(meta.timeSurf) : null;
+  const rating = typeof meta.enjoyment === 'number' ? meta.enjoyment : 0;
   return (
     <div className="text-[8px] text-[hsl(var(--gb-dark))] flex flex-wrap gap-x-3 gap-y-[2px] mt-[2px]">
-      {meta.location && <span>LOC: {String(meta.location).toUpperCase()}</span>}
-      {meta.timeSurf && <span>TIME: {String(meta.timeSurf)}MIN</span>}
-      {meta.enjoyment && typeof meta.enjoyment === 'number' && (
-        <span className="flex items-center gap-1">RATING: <StarRating rating={meta.enjoyment} /></span>
+      {loc && <span>LOC: {loc}</span>}
+      {time && <span>TIME: {time}MIN</span>}
+      {rating > 0 && (
+        <span className="flex items-center gap-1">RATING: <StarRating rating={rating} /></span>
       )}
     </div>
   );
 }
 
 function RunDetail({ meta }: { meta: Record<string, unknown> }) {
+  const dist = meta.distance ? String(meta.distance) : null;
+  const pace = meta.pace ? String(meta.pace) : null;
+  const rating = typeof meta.enjoyment === 'number' ? meta.enjoyment : 0;
   return (
     <div className="text-[8px] text-[hsl(var(--gb-dark))] flex flex-wrap gap-x-3 gap-y-[2px] mt-[2px]">
-      {meta.distance && <span>DIST: {String(meta.distance)}KM</span>}
-      {meta.pace && <span>PACE: {String(meta.pace)}/KM</span>}
-      {meta.enjoyment && typeof meta.enjoyment === 'number' && (
-        <span className="flex items-center gap-1">RATING: <StarRating rating={meta.enjoyment} /></span>
+      {dist && <span>DIST: {dist}KM</span>}
+      {pace && <span>PACE: {pace}/KM</span>}
+      {rating > 0 && (
+        <span className="flex items-center gap-1">RATING: <StarRating rating={rating} /></span>
       )}
     </div>
   );
@@ -164,7 +170,7 @@ export default function Archive() {
             className={`px-2 py-1 text-[8px] font-bold uppercase tracking-wider border-2 transition-colors ${
               filter === cat
                 ? 'bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))] border-[hsl(var(--gb-darkest))]'
-                : 'bg-[hsl(var(--gb-light))] text-[hsl(var(--gb-darkest))] border-[hsl(var(--gb-dark))] hover:bg-[hsl(var(--gb-medium))]'
+                : 'bg-[hsl(var(--gb-light))] text-[hsl(var(--gb-darkest))] border-[hsl(var(--gb-dark))] hover:bg-[hsl(var(--gb-dark))]/20'
             }`}
             data-testid={`filter-${cat}`}
           >
@@ -204,7 +210,7 @@ export default function Archive() {
             </div>
 
             <div className="border-4 border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-light))]">
-              <div className="grid grid-cols-[56px_1fr] text-[8px] font-bold text-[hsl(var(--gb-darkest))] border-b-2 border-[hsl(var(--gb-dark))] px-2 py-1 bg-[hsl(var(--gb-medium))]">
+              <div className="grid grid-cols-[56px_1fr] text-[8px] font-bold text-[hsl(var(--gb-darkest))] border-b-2 border-[hsl(var(--gb-dark))] px-2 py-1 bg-[hsl(var(--gb-dark))]/20">
                 <span>DATE</span>
                 <span>ACTIVITY</span>
               </div>
@@ -241,7 +247,7 @@ export default function Archive() {
                 );
               })}
 
-              <div className="border-t-2 border-[hsl(var(--gb-dark))] px-2 py-1 bg-[hsl(var(--gb-medium))] text-[8px] text-[hsl(var(--gb-darkest))] flex justify-between flex-wrap gap-1">
+              <div className="border-t-2 border-[hsl(var(--gb-dark))] px-2 py-1 bg-[hsl(var(--gb-dark))]/20 text-[8px] text-[hsl(var(--gb-darkest))] flex justify-between flex-wrap gap-1">
                 <span>{week.logs.length} ENTRIES</span>
                 <span>
                   {(['strength', 'run', 'surf', 'maint', 'breath'] as const).map(cat => {

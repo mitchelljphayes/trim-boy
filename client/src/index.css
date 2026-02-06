@@ -27,6 +27,22 @@
   --radius: 0px; /* Pixel art has no rounded corners */
 }
 
+.theme-classic {
+  --gb-lightest: 88 47% 62%;  /* #9bbc0f */
+  --gb-light: 88 47% 53%;     /* #8bac0f */
+  --gb-dark: 120 34% 28%;     /* #306230 */
+  --gb-darkest: 120 57% 14%;  /* #0f380f */
+  filter: contrast(1.1) brightness(1.1);
+}
+
+.theme-color {
+  --gb-lightest: 0 0% 94%;    /* #efefef */
+  --gb-light: 207 53% 82%;    /* #b0d4f1 */
+  --gb-dark: 355 82% 47%;     /* #cf1621 */
+  --gb-darkest: 0 0% 13%;     /* #222222 */
+  filter: none;
+}
+
 @layer base {
   body {
     @apply bg-[hsl(var(--gb-lightest))] text-[hsl(var(--gb-darkest))] antialiased selection:bg-[hsl(var(--gb-dark))] selection:text-[hsl(var(--gb-lightest))];

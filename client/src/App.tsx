@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -54,11 +54,20 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    const root = document.getElementById("app-root");
+    if (!root) return;
+    const saved = localStorage.getItem("trim_hardware_theme") || "classic";
+    root.classList.add(saved === "color" ? "theme-color" : "theme-classic");
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <Toaster />
-      <Router />
-    </QueryClientProvider>
+    <div id="app-root">
+      <QueryClientProvider client={queryClient}>
+        <Toaster />
+        <Router />
+      </QueryClientProvider>
+    </div>
   );
 }
 
