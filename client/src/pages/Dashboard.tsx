@@ -6,7 +6,7 @@ import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
 import { PowerCells } from "@/components/PowerCells";
 import { HabitGrid } from "@/components/HabitGrid";
 import { RetroButton } from "@/components/RetroButton";
-import { isRecharging, hasRechargedThisWeek } from "@/pages/Recharge";
+import { isRecharging } from "@/pages/Recharge";
 import { hasYogaToday } from "@/pages/Yoga";
 import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 
@@ -151,20 +151,6 @@ export default function Dashboard() {
                 RECHARGE
               </span>
             </RetroButton>
-            {hasRechargedThisWeek() && (
-              <button
-                onClick={() => {
-                  localStorage.removeItem('trim_recharge_week');
-                  localStorage.removeItem('trim_recharging');
-                  window.dispatchEvent(new Event('recharge-status-change'));
-                  setRechargingState(false);
-                }}
-                className="w-full text-center text-[7px] text-[hsl(var(--gb-dark))]/40 uppercase tracking-widest hover:text-[hsl(var(--gb-dark))] transition-colors py-1"
-                data-testid="button-recharge-override"
-              >
-                [ OVERRIDE RECHARGE ]
-              </button>
-            )}
           </div>
         </div>
 
