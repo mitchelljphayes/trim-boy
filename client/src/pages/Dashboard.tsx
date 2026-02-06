@@ -141,10 +141,11 @@ export default function Dashboard() {
               onClick={() => setLocation('/yoga')}
               fullWidth
               disabled={isPending}
-              style={{ background: '#8B7300', color: '#FFF3C4', borderColor: '#FFD700' }}
+              style={yogaStar ? { background: '#8B7300', color: '#FFF3C4', borderColor: '#FFD700' } : undefined}
               data-testid="button-yoga"
             >
               BONUS: ASHTANGA FLOW
+              {yogaStar && <span className="text-[8px] ml-1" style={{ color: '#FFD700' }}>COMPLETED</span>}
             </RetroButton>
           </div>
         </div>
