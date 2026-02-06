@@ -6,7 +6,7 @@ import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
 import { PowerCells } from "@/components/PowerCells";
 import { HabitGrid } from "@/components/HabitGrid";
 import { RetroButton } from "@/components/RetroButton";
-import { isRecharging } from "@/pages/Recharge";
+import { isRecharging, hasRechargedThisWeek } from "@/pages/Recharge";
 import { hasYogaToday } from "@/pages/Yoga";
 import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 
@@ -151,7 +151,7 @@ export default function Dashboard() {
                 RECHARGE
               </span>
             </RetroButton>
-            {recharging && (
+            {hasRechargedThisWeek() && (
               <button
                 onClick={() => {
                   localStorage.removeItem('trim_recharge_week');

@@ -38,7 +38,7 @@ function getWeekKey(): string {
   return format(monday, 'yyyy-MM-dd');
 }
 
-function hasRechargedThisWeek(): boolean {
+export function hasRechargedThisWeek(): boolean {
   const stored = localStorage.getItem('trim_recharge_week');
   return stored === getWeekKey();
 }
