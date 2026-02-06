@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { getStreak } from "@/lib/streakManager";
 
-type HardwareTheme = "classic" | "color";
+type HardwareTheme = "classic" | "color" | "gold";
 
 function DMGIcon({ size = 20 }: { size?: number }) {
   return (
@@ -32,37 +33,79 @@ function GBCIcon({ size = 20 }: { size?: number }) {
   );
 }
 
+function GoldIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <rect x="3" y="1" width="14" height="18" rx="1" fill="#B8860B" opacity="0.3" stroke="#FFD700" strokeWidth="1.5" />
+      <rect x="5" y="3" width="10" height="7" fill="#FFD700" opacity="0.25" stroke="#FFD700" strokeWidth="1" />
+      <line x1="5" y1="6.5" x2="15" y2="6.5" stroke="#FFD700" strokeWidth="0.5" opacity="0.4" />
+      <circle cx="12" cy="14" r="1.5" fill="#FFD700" />
+      <rect x="7" y="13" width="3" height="1" fill="#FFD700" rx="0.5" />
+      <rect x="8" y="12" width="1" height="3" fill="#FFD700" rx="0.5" />
+    </svg>
+  );
+}
+
+const ALL_THEMES: HardwareTheme[] = ["classic", "color", "gold"];
+
 export function HardwareToggle() {
   const [theme, setTheme] = useState<HardwareTheme>(() => {
     return (localStorage.getItem("trim_hardware_theme") as HardwareTheme) || "classic";
   });
+  const [goldUnlocked, setGoldUnlocked] = useState(() => getStreak() >= 2);
+
+  useEffect(() => {
+    const handler = () => {
+      const unlocked = getStreak() >= 2;
+      setGoldUnlocked(unlocked);
+      if (!unlocked) {
+        setTheme(prev => prev === "gold" ? "classic" : prev);
+      }
+    };
+    window.addEventListener('streak-update', handler);
+    return () => window.removeEventListener('streak-update', handler);
+  }, []);
 
   useEffect(() => {
     const root = document.getElementById("app-root");
     if (!root) return;
-    root.classList.remove("theme-classic", "theme-color");
-    root.classList.add(theme === "classic" ? "theme-classic" : "theme-color");
+    root.classList.remove("theme-classic", "theme-color", "theme-gold");
+    root.classList.add(`theme-${theme}`);
     localStorage.setItem("trim_hardware_theme", theme);
   }, [theme]);
 
   const toggle = () => {
-    setTheme((prev) => (prev === "classic" ? "color" : "classic"));
+    setTheme((prev) => {
+      const available = goldUnlocked ? ALL_THEMES : ALL_THEMES.filter(t => t !== "gold");
+      const idx = available.indexOf(prev);
+      return available[(idx + 1) % available.length];
+    });
+  };
+
+  const labels: Record<HardwareTheme, string> = {
+    classic: "DMG",
+    color: "GBC",
+    gold: "GOLD",
+  };
+
+  const titles: Record<HardwareTheme, string> = {
+    classic: "Switch to GBC Mode",
+    color: goldUnlocked ? "Switch to Gold Edition" : "Switch to DMG Mode",
+    gold: "Switch to DMG Mode",
   };
 
   return (
     <button
       onClick={toggle}
       className="p-2 hover:bg-[hsl(var(--gb-light))] border-2 border-transparent hover:border-[hsl(var(--gb-dark))] transition-colors flex items-center gap-1"
-      title={theme === "classic" ? "Switch to GBC Mode" : "Switch to DMG Mode"}
+      title={titles[theme]}
       data-testid="button-theme-toggle"
     >
-      {theme === "classic" ? (
-        <DMGIcon size={22} />
-      ) : (
-        <GBCIcon size={22} />
-      )}
-      <span className="text-[6px] text-[hsl(var(--gb-darkest))] uppercase tracking-wider">
-        {theme === "classic" ? "DMG" : "GBC"}
+      {theme === "classic" && <DMGIcon size={22} />}
+      {theme === "color" && <GBCIcon size={22} />}
+      {theme === "gold" && <GoldIcon size={22} />}
+      <span className={`text-[6px] uppercase tracking-wider ${theme === "gold" ? "text-[#FFD700]" : "text-[hsl(var(--gb-darkest))]"}`}>
+        {labels[theme]}
       </span>
     </button>
   );

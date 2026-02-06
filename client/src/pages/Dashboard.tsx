@@ -56,6 +56,7 @@ export default function Dashboard() {
     lastCheckedStats.current = statsKey;
     const result = checkAndUpdateStreak(stats.strengthCount, stats.runCount);
     setStreak(result.streak);
+    window.dispatchEvent(new Event('streak-update'));
     if (result.justCompleted) {
       setShowLevelUp(true);
       setTimeout(() => setShowLevelUp(false), 4000);

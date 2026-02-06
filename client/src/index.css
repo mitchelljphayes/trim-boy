@@ -53,6 +53,60 @@
   filter: none;
 }
 
+.theme-gold {
+  --gb-lightest: 43 30% 15%;      /* dark gold bg #2A2510 */
+  --gb-light: 43 50% 30%;         /* mid gold panels */
+  --gb-dark: 43 76% 45%;          /* #B8860B accent */
+  --gb-darkest: 51 100% 50%;      /* #FFD700 primary gold */
+
+  --background: 43 30% 15%;
+  --foreground: 51 100% 50%;
+  --card: 43 50% 30%;
+  --card-foreground: 51 100% 50%;
+  --border: 43 76% 45%;
+  --input: 43 50% 30%;
+  --ring: 51 100% 50%;
+  --primary: 51 100% 50%;
+  --primary-foreground: 43 30% 15%;
+  filter: none;
+}
+
+.theme-gold .lcd-pixel-grid,
+.theme-gold .lcd-scanlines,
+.theme-gold .lcd-noise {
+  display: none;
+}
+
+.theme-gold img.pixelated,
+.theme-gold img[data-testid="img-briefing-sprite"],
+.theme-gold img[data-testid="img-trimboy-sprite"] {
+  filter: url(#gold-palette);
+}
+
+#app-root.theme-gold {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), inset 0 0 30px rgba(255, 215, 0, 0.05);
+}
+
+.gold-edition-badge {
+  position: fixed;
+  bottom: 28px;
+  right: 8px;
+  z-index: 60;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  color: #FFD700;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: gold-shimmer 3s ease-in-out infinite alternate;
+}
+
+@keyframes gold-shimmer {
+  0% { opacity: 0.5; text-shadow: 0 0 4px rgba(255, 215, 0, 0.3); }
+  100% { opacity: 1; text-shadow: 0 0 8px rgba(255, 215, 0, 0.7); }
+}
+
 .theme-color .lcd-pixel-grid,
 .theme-color .lcd-scanlines,
 .theme-color .lcd-noise {

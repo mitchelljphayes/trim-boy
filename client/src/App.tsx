@@ -23,6 +23,7 @@ import Recharge from "@/pages/Recharge";
 import Yoga from "@/pages/Yoga";
 import Archive from "@/pages/Archive";
 import { LCDOverlay } from "@/components/LCDOverlay";
+import { getStreak } from "@/lib/streakManager";
 
 function Router() {
   const [userName] = useState(() => localStorage.getItem("trim_user_name"));
@@ -55,11 +56,28 @@ function Router() {
 }
 
 function App() {
+  const [isGold, setIsGold] = useState(false);
+
   useEffect(() => {
     const root = document.getElementById("app-root");
     if (!root) return;
-    const saved = localStorage.getItem("trim_hardware_theme") || "classic";
-    root.classList.add(saved === "color" ? "theme-color" : "theme-classic");
+    let saved = localStorage.getItem("trim_hardware_theme") || "classic";
+    if (saved === "gold" && getStreak() < 2) {
+      saved = "classic";
+      localStorage.setItem("trim_hardware_theme", saved);
+    }
+    root.classList.add(`theme-${saved}`);
+    setIsGold(saved === "gold");
+  }, []);
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const root = document.getElementById("app-root");
+      if (root) setIsGold(root.classList.contains("theme-gold"));
+    });
+    const root = document.getElementById("app-root");
+    if (root) observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -74,6 +92,14 @@ function App() {
               <feFuncB type="discrete" tableValues="0.059 0.188 0.059 0.059" />
             </feComponentTransfer>
           </filter>
+          <filter id="gold-palette" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix" values="
+              0.6 0.3 0.1 0 0.1
+              0.5 0.3 0.1 0 0.05
+              0.1 0.1 0.05 0 0
+              0   0   0    1 0
+            " />
+          </filter>
         </defs>
       </svg>
       <QueryClientProvider client={queryClient}>
@@ -82,6 +108,11 @@ function App() {
           <Router />
         </div>
         <LCDOverlay />
+        {isGold && (
+          <span className="gold-edition-badge" data-testid="text-gold-edition">
+            GOLD EDITION
+          </span>
+        )}
       </QueryClientProvider>
     </div>
   );
