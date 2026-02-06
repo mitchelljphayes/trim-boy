@@ -31,7 +31,7 @@ export default function BootSequence() {
           <img 
             src={trimBoySprite} 
             alt="TrimBoy" 
-            className="w-48 h-auto pixelated"
+            className="w-20 h-auto pixelated"
           />
           
           <div className="text-center space-y-2">
