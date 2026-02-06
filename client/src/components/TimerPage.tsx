@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { useCreateLog } from '@/hooks/use-trim';
 import { useAudio } from '@/hooks/use-audio';
@@ -17,37 +17,63 @@ export interface RoutineConfig {
   redirectTo?: string;
 }
 
-type Phase = 'briefing' | 'intro' | 'work' | 'rest' | 'cooldown' | 'complete';
+interface Step {
+  label: string;
+  duration: number;
+  type: 'intro' | 'work' | 'rest' | 'cooldown';
+}
 
-export default function TimerPage({
-  title,
-  exercises,
-  workDuration,
-  restDuration,
-  rounds,
-  cooldown,
-  category,
-  skipLog,
-  redirectTo,
-}: RoutineConfig) {
+function buildSteps(config: RoutineConfig): Step[] {
+  const steps: Step[] = [];
+  steps.push({ label: 'GET READY', duration: 5, type: 'intro' });
+
+  for (let r = 0; r < config.rounds; r++) {
+    for (let e = 0; e < config.exercises.length; e++) {
+      steps.push({ label: config.exercises[e], duration: config.workDuration, type: 'work' });
+      const isLastExInRound = e === config.exercises.length - 1;
+      const isLastRound = r === config.rounds - 1;
+      if (config.restDuration > 0 && !(isLastExInRound && isLastRound)) {
+        steps.push({ label: 'REST', duration: config.restDuration, type: 'rest' });
+      }
+    }
+  }
+
+  if (config.cooldown) {
+    steps.push({ label: config.cooldown.label, duration: config.cooldown.duration, type: 'cooldown' });
+  }
+
+  return steps;
+}
+
+export default function TimerPage(config: RoutineConfig) {
+  const { title, category, skipLog, redirectTo, exercises, workDuration, restDuration, rounds, cooldown } = config;
+  const steps = buildSteps(config);
+
   const [, setLocation] = useLocation();
   const { playHighBeep, playLowBlip, playCelebratoryIdent, playGentleIdent, initAudio, setMuted } = useAudio();
   const { mutate: logActivity } = useCreateLog();
 
-  const [phase, setPhase] = useState<Phase>('briefing');
+  const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
   const [muted, setMutedState] = useState(false);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [currentExIndex, setCurrentExIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(5);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [complete, setComplete] = useState(false);
 
-  const togglePause = () => setPaused((p) => !p);
-  const toggleMute = () => {
-    setMutedState((m) => {
-      setMuted(!m);
-      return !m;
-    });
-  };
+  const listRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<HTMLDivElement>(null);
+
+  const currentStep = steps[currentStepIndex];
+  const isRest = currentStep?.type === 'rest';
+  const isCooldown = currentStep?.type === 'cooldown';
+  const isIntro = currentStep?.type === 'intro';
+
+  const lastWorkStepIndex = (() => {
+    for (let i = steps.length - 1; i >= 0; i--) {
+      if (steps[i].type === 'work') return i;
+    }
+    return -1;
+  })();
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
@@ -57,93 +83,76 @@ export default function TimerPage({
 
   const startRoutine = () => {
     initAudio();
-    setPhase('intro');
-    setTimeLeft(5);
+    setStarted(true);
+    setTimeLeft(steps[0].duration);
     playHighBeep();
   };
 
-  const isLastRep = currentRound === rounds && currentExIndex === exercises.length - 1;
+  const togglePause = () => setPaused((p) => !p);
 
-  const advanceFromWork = useCallback(() => {
-    if (isLastRep) {
+  const toggleMute = () => {
+    setMutedState((m) => {
+      setMuted(!m);
+      return !m;
+    });
+  };
+
+  const advanceStep = useCallback(() => {
+    const nextIndex = currentStepIndex + 1;
+
+    if (currentStepIndex === lastWorkStepIndex) {
       playCelebratoryIdent();
-      if (cooldown) {
-        setPhase('cooldown');
-        setTimeLeft(cooldown.duration);
-      } else {
-        setPhase('complete');
-        if (!skipLog) logActivity({ category, date: new Date() });
-        playGentleIdent();
-        setTimeout(() => setLocation(redirectTo || '/dashboard'), 3500);
+    }
+
+    if (nextIndex >= steps.length) {
+      playGentleIdent();
+      setComplete(true);
+      if (!skipLog) {
+        logActivity({ category, date: new Date() });
       }
+      setTimeout(() => setLocation(redirectTo || '/dashboard'), 3500);
       return;
     }
 
-    if (restDuration > 0) {
-      setPhase('rest');
-      setTimeLeft(restDuration);
-    } else {
-      const nextEx = currentExIndex + 1;
-      if (nextEx >= exercises.length) {
-        setCurrentExIndex(0);
-        setCurrentRound((r) => r + 1);
-      } else {
-        setCurrentExIndex(nextEx);
-      }
-      setTimeLeft(workDuration);
+    setCurrentStepIndex(nextIndex);
+    setTimeLeft(steps[nextIndex].duration);
+
+    if (steps[nextIndex].type === 'work') {
       playHighBeep();
     }
-  }, [isLastRep, restDuration, currentExIndex, exercises.length, workDuration, cooldown, playCelebratoryIdent, playGentleIdent, playHighBeep, skipLog, logActivity, category, setLocation, redirectTo]);
-
-  const advanceFromRest = useCallback(() => {
-    const nextEx = currentExIndex + 1;
-    if (nextEx >= exercises.length) {
-      setCurrentExIndex(0);
-      setCurrentRound((r) => r + 1);
-    } else {
-      setCurrentExIndex(nextEx);
-    }
-    setPhase('work');
-    setTimeLeft(workDuration);
-    playHighBeep();
-  }, [currentExIndex, exercises.length, workDuration, playHighBeep]);
-
-  const advanceFromCooldown = useCallback(() => {
-    setPhase('complete');
-    if (!skipLog) logActivity({ category, date: new Date() });
-    playGentleIdent();
-    setTimeout(() => setLocation(redirectTo || '/dashboard'), 3500);
-  }, [skipLog, logActivity, category, playGentleIdent, setLocation, redirectTo]);
-
-  const advanceFromIntro = useCallback(() => {
-    playHighBeep();
-    setPhase('work');
-    setTimeLeft(workDuration);
-  }, [playHighBeep, workDuration]);
+  }, [currentStepIndex, steps, lastWorkStepIndex, playCelebratoryIdent, playGentleIdent, playHighBeep, logActivity, category, setLocation, skipLog, redirectTo]);
 
   useEffect(() => {
-    if (phase === 'briefing' || phase === 'complete' || paused) return;
+    if (!started || paused || complete) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          if (phase === 'intro') advanceFromIntro();
-          else if (phase === 'work') advanceFromWork();
-          else if (phase === 'rest') advanceFromRest();
-          else if (phase === 'cooldown') advanceFromCooldown();
+          if (currentStep?.type === 'intro') {
+            playHighBeep();
+          }
+          advanceStep();
           return 0;
         }
-        if (prev <= 4 && prev > 1) playLowBlip();
+        if (prev <= 4 && prev > 1) {
+          playLowBlip();
+        }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [phase, paused, advanceFromIntro, advanceFromWork, advanceFromRest, advanceFromCooldown, playLowBlip]);
+  }, [started, paused, complete, currentStepIndex, advanceStep, playLowBlip, playHighBeep, currentStep]);
+
+  useEffect(() => {
+    if (activeRef.current && listRef.current) {
+      activeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [currentStepIndex]);
 
   // === BRIEFING SCREEN ===
-  if (phase === 'briefing') {
+  if (!started) {
     const durationLabel = restDuration > 0
       ? `${workDuration}s/${restDuration}s${rounds > 1 ? ` x ${rounds}` : ''}`
       : `${workDuration}s${rounds > 1 ? ` x ${rounds}` : ''}`;
@@ -186,7 +195,7 @@ export default function TimerPage({
   }
 
   // === COMPLETE SCREEN ===
-  if (phase === 'complete') {
+  if (complete) {
     return (
       <div className="min-h-screen bg-[hsl(var(--gb-lightest))] flex items-center justify-center text-center p-8">
         <div>
@@ -197,11 +206,10 @@ export default function TimerPage({
     );
   }
 
-  // === COOLDOWN / SAVASANA ===
-  if (phase === 'cooldown' && cooldown) {
+  // === COOLDOWN / SAVASANA (full screen dark with rays) ===
+  if (isCooldown) {
     return (
       <div className="min-h-screen bg-[hsl(var(--gb-darkest))] flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        {/* Pulsing pixel-art rays */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
           <pre
             className="text-[hsl(var(--gb-dark))]/20 text-[10px] leading-tight text-center animate-pulse"
@@ -236,7 +244,7 @@ export default function TimerPage({
             COOL-DOWN
           </p>
           <h2 className="text-sm font-bold text-[hsl(var(--gb-lightest))] mb-6" data-testid="text-exercise">
-            {cooldown.label}
+            {currentStep.label}
           </h2>
 
           <div
@@ -250,7 +258,7 @@ export default function TimerPage({
           <div className="w-48 h-3 border-2 border-[hsl(var(--gb-light))] p-0.5 mb-6">
             <div
               className="h-full bg-[hsl(var(--gb-lightest))] transition-all duration-1000"
-              style={{ width: `${(timeLeft / cooldown.duration) * 100}%` }}
+              style={{ width: `${(timeLeft / currentStep.duration) * 100}%` }}
             />
           </div>
 
@@ -267,158 +275,95 @@ export default function TimerPage({
     );
   }
 
-  // === INTRO SCREEN ===
-  if (phase === 'intro') {
-    return (
-      <div className="min-h-screen bg-[hsl(var(--gb-darkest))] flex flex-col items-center justify-center p-6">
-        <p className="text-[9px] text-[hsl(var(--gb-light))] uppercase tracking-widest mb-4" data-testid="text-phase">GET READY</p>
-        <div
-          className="text-7xl font-bold text-[hsl(var(--gb-lightest))] animate-pulse"
-          style={{ fontFamily: "'Press Start 2P', monospace" }}
-          data-testid="text-timer"
-        >
-          {timeLeft}
-        </div>
-      </div>
-    );
-  }
-
-  // === ORBITAL ACTIVE UI (work + rest) ===
-  const isDark = phase === 'rest';
+  // === ACTIVE TIMER UI (work / rest / intro - step list style) ===
+  const isDark = isRest || isIntro;
   const bgClass = isDark ? 'bg-[hsl(var(--gb-darkest))]' : 'bg-[hsl(var(--gb-lightest))]';
-  const textMain = isDark ? 'text-[hsl(var(--gb-lightest))]' : 'text-[hsl(var(--gb-darkest))]';
+  const textClass = isDark ? 'text-[hsl(var(--gb-lightest))]' : 'text-[hsl(var(--gb-darkest))]';
   const textSub = isDark ? 'text-[hsl(var(--gb-light))]' : 'text-[hsl(var(--gb-dark))]';
-
-  const circleRadius = Math.min(140, 120 + exercises.length * 4);
-  const angleStep = (2 * Math.PI) / exercises.length;
-  const startAngle = -Math.PI / 2;
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${bgClass}`}>
-      {/* Phase label */}
-      <div className="flex-shrink-0 p-3 text-center">
-        <p className={`text-[9px] uppercase tracking-widest ${textSub}`} data-testid="text-phase">
-          {phase === 'work' ? 'WORK' : 'REST'}
+      {/* Top Zone - Timer + Current Exercise */}
+      <div className="flex-shrink-0 flex flex-col items-center pt-6 pb-3 px-4">
+        <p className={`text-[9px] uppercase tracking-widest mb-1 ${textSub}`} data-testid="text-phase">
+          {isIntro ? 'GET READY' : isRest ? 'REST' : 'WORK'}
         </p>
+
+        <h2 className={`text-xs font-bold mb-3 uppercase text-center ${textClass}`} data-testid="text-exercise">
+          {currentStep.label}
+        </h2>
+
+        <div
+          className={`text-5xl font-bold mb-3 ${textClass}`}
+          style={{ fontFamily: "'Press Start 2P', monospace" }}
+          data-testid="text-timer"
+        >
+          {formatTime(timeLeft)}
+        </div>
+
+        {rounds > 1 && (
+          <p className={`text-[8px] uppercase tracking-widest mb-2 ${textSub}`} data-testid="text-round">
+            ROUND {Math.min(Math.floor(currentStepIndex / (exercises.length * 2)) + 1, rounds)}/{rounds}
+          </p>
+        )}
+
+        {/* Progress bar */}
+        <div className="w-full max-w-xs h-3 border-2 border-[hsl(var(--gb-dark))] p-0.5 mb-3">
+          <div
+            className={`h-full transition-all duration-1000 ${isDark ? 'bg-[hsl(var(--gb-lightest))]' : 'bg-[hsl(var(--gb-darkest))]'}`}
+            style={{ width: `${(timeLeft / currentStep.duration) * 100}%` }}
+          />
+        </div>
+
+        <div className="flex gap-4 items-center">
+          <button
+            onClick={togglePause}
+            className={`w-10 h-10 flex items-center justify-center border-2 border-current ${textClass}`}
+            data-testid="button-pause"
+          >
+            {paused ? <Play size={18} /> : <Pause size={18} />}
+          </button>
+          <button
+            onClick={toggleMute}
+            className={`w-10 h-10 flex items-center justify-center border-2 border-current ${textClass}`}
+            data-testid="button-mute"
+          >
+            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+        </div>
       </div>
 
-      {/* Orbital circle area */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="relative" style={{ width: circleRadius * 2 + 80, height: circleRadius * 2 + 80 }}>
-          {/* Exercise nodes around circle */}
-          {exercises.map((ex, i) => {
-            const angle = startAngle + i * angleStep;
-            const cx = circleRadius + 40;
-            const cy = circleRadius + 40;
-            const x = cx + circleRadius * Math.cos(angle);
-            const y = cy + circleRadius * Math.sin(angle);
-            const isActive = i === currentExIndex;
+      {/* Bottom Zone - Step List */}
+      <div ref={listRef} className="flex-1 overflow-y-auto px-3 pb-4">
+        <div className="max-w-md mx-auto">
+          {steps.map((step, i) => {
+            const isActive = i === currentStepIndex;
+            const isDone = i < currentStepIndex;
 
             return (
               <div
                 key={i}
-                className={`absolute flex items-center justify-center text-center transition-all duration-300 ${
+                ref={isActive ? activeRef : undefined}
+                className={`flex items-center gap-2 py-1.5 px-2 text-[8px] leading-tight transition-all duration-200 ${
                   isActive
-                    ? 'bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))] z-10 scale-110'
-                    : `${textSub} z-0`
+                    ? 'bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))]'
+                    : isDone
+                      ? `${textSub}/30`
+                      : textSub
                 }`}
-                style={{
-                  left: x,
-                  top: y,
-                  transform: 'translate(-50%, -50%)',
-                  width: exercises.length <= 3 ? 80 : 68,
-                  height: exercises.length <= 3 ? 80 : 68,
-                  padding: '4px',
-                  border: isActive ? '3px solid hsl(var(--gb-lightest))' : '2px solid hsl(var(--gb-dark))',
-                }}
-                data-testid={`orbital-exercise-${i}`}
+                data-testid={`step-${i}`}
               >
-                <span className="text-[7px] font-bold leading-tight uppercase break-words">{ex}</span>
+                <span className={`flex-shrink-0 w-3 font-bold ${isActive ? 'animate-pulse' : 'invisible'}`}>
+                  {'>'}
+                </span>
+                <span className={`flex-1 truncate ${isDone ? 'line-through opacity-40' : ''}`}>
+                  {step.label}
+                </span>
+                <span className="flex-shrink-0">{formatTime(step.duration)}</span>
               </div>
             );
           })}
-
-          {/* Center timer */}
-          <div
-            className="absolute flex flex-col items-center justify-center"
-            style={{
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <div
-              className={`text-4xl font-bold mb-2 ${textMain}`}
-              style={{ fontFamily: "'Press Start 2P', monospace" }}
-              data-testid="text-timer"
-            >
-              {formatTime(timeLeft)}
-            </div>
-            {rounds > 1 && (
-              <p className={`text-[8px] uppercase tracking-widest ${textSub}`} data-testid="text-round">
-                ROUND {currentRound}/{rounds}
-              </p>
-            )}
-          </div>
         </div>
-
-        {/* Current exercise name (during rest show upcoming) */}
-        <div className="mt-4 text-center">
-          {phase === 'rest' ? (
-            <p className={`text-[9px] ${textSub}`}>
-              Up next: <span className="font-bold">{exercises[(currentExIndex + 1) % exercises.length]}</span>
-            </p>
-          ) : (
-            <p className={`text-xs font-bold uppercase ${textMain}`} data-testid="text-exercise">
-              {exercises[currentExIndex]}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Progress bar + controls */}
-      <div className="flex-shrink-0 px-6 pb-6 flex flex-col items-center gap-3">
-        <div className="w-full max-w-xs h-3 border-2 border-[hsl(var(--gb-dark))] p-0.5">
-          <div
-            className={`h-full transition-all duration-1000 ${isDark ? 'bg-[hsl(var(--gb-lightest))]' : 'bg-[hsl(var(--gb-darkest))]'}`}
-            style={{ width: `${(timeLeft / (phase === 'work' ? workDuration : restDuration)) * 100}%` }}
-          />
-        </div>
-        <div className="flex gap-4 items-center">
-          <button onClick={togglePause} className={`w-10 h-10 flex items-center justify-center border-2 border-current ${textMain}`} data-testid="button-pause">
-            {paused ? <Play size={18} /> : <Pause size={18} />}
-          </button>
-          <button onClick={toggleMute} className={`w-10 h-10 flex items-center justify-center border-2 border-current ${textMain}`} data-testid="button-mute">
-            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-          </button>
-        </div>
-
-        {/* Savasana teaser at bottom with pulsing pixel-art rays */}
-        {cooldown && (
-          <div className="mt-4 text-center relative">
-            <pre
-              className={`text-[7px] leading-none ${textSub} opacity-30 animate-pulse select-none`}
-              style={{ fontFamily: "'Press Start 2P', monospace" }}
-              aria-hidden="true"
-            >
-{`  \\  |  /
-   \\ | /
-    \\|/`}
-            </pre>
-            <div className={`text-[8px] font-bold uppercase tracking-widest ${textSub} opacity-50 mt-1`}>
-              {cooldown.label}
-            </div>
-            <pre
-              className={`text-[7px] leading-none ${textSub} opacity-30 animate-pulse select-none`}
-              style={{ fontFamily: "'Press Start 2P', monospace" }}
-              aria-hidden="true"
-            >
-{`    /|\\
-   / | \\
-  /  |  \\`}
-            </pre>
-          </div>
-        )}
       </div>
     </div>
   );
