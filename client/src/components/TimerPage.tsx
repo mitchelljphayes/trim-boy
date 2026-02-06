@@ -15,6 +15,7 @@ export interface RoutineConfig {
   category: string;
   skipLog?: boolean;
   redirectTo?: string;
+  spriteUrl?: string;
 }
 
 interface Step {
@@ -48,7 +49,7 @@ function buildSteps(config: RoutineConfig): Step[] {
 }
 
 export default function TimerPage(config: RoutineConfig) {
-  const { title, category, skipLog, redirectTo, exercises, workDuration, restDuration, rounds, cooldown } = config;
+  const { title, category, skipLog, redirectTo, exercises, workDuration, restDuration, rounds, cooldown, spriteUrl } = config;
   const steps = buildSteps(config);
 
   const [, setLocation] = useLocation();
@@ -167,6 +168,15 @@ export default function TimerPage(config: RoutineConfig) {
       : `${workDuration}s${rounds > 1 ? ` x ${rounds}` : ''}`;
     return (
       <div className="min-h-screen bg-[hsl(var(--gb-lightest))] p-6 flex flex-col items-center justify-center text-center">
+        {spriteUrl && (
+          <img
+            src={spriteUrl}
+            alt={`${title} sprite`}
+            className="w-48 h-auto mb-4 pixelated"
+            style={{ imageRendering: 'pixelated' }}
+            data-testid="img-briefing-sprite"
+          />
+        )}
         <h1 className="text-xl font-bold mb-2 text-[hsl(var(--gb-darkest))]" data-testid="text-title">{title}</h1>
         <p className="mb-6 text-[9px] text-[hsl(var(--gb-dark))] uppercase tracking-widest">
           {exercises.length} Exercises {rounds > 1 ? `/ ${rounds} Rounds` : ''} / Hands-free

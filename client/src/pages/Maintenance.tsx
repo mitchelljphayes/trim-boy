@@ -1,4 +1,5 @@
 import TimerPage from '@/components/TimerPage';
+import maintSprite from '@assets/trimboy_sprite_-_maintenance_1770379541305.png';
 
 export default function Maintenance() {
   return (
@@ -10,6 +11,7 @@ export default function Maintenance() {
       rounds={1}
       cooldown={{ label: 'Savasana', duration: 180 }}
       category="maint"
+      spriteUrl={maintSprite}
     />
   );
 }
