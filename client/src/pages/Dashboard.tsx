@@ -79,7 +79,7 @@ export default function Dashboard() {
             className={`text-[8px] uppercase tracking-widest mr-1 ${recharging ? 'text-[hsl(var(--gb-dark))] animate-pulse' : 'text-[hsl(var(--gb-dark))]/50'}`}
             data-testid="text-system-status"
           >
-            {recharging ? 'SYS:RCH' : 'SYS:ON'}
+            {recharging ? 'SYS:RCH' : 'TRIMCORP'}
           </span>
           <HardwareToggle />
           <button 
