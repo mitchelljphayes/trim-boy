@@ -36,10 +36,10 @@
 }
 
 .theme-color {
-  --gb-lightest: 40 20% 92%;    /* warm off-white */
-  --gb-light: 210 18% 78%;      /* muted steel blue */
-  --gb-dark: 355 45% 45%;       /* subdued burgundy */
-  --gb-darkest: 220 10% 18%;    /* dark charcoal with a cool tint */
+  --gb-lightest: 0 0% 90%;       /* pure light grey background */
+  --gb-light: 215 30% 80%;       /* soft powdery blue for boxes */
+  --gb-dark: 355 45% 45%;        /* subdued burgundy accent */
+  --gb-darkest: 220 10% 18%;     /* dark charcoal text */
   filter: none;
 }
 
