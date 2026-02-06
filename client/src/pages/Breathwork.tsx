@@ -17,22 +17,38 @@ interface Starling {
 }
 
 function StarlingField() {
-  const starlings = useMemo<Starling[]>(() => {
-    return Array.from({ length: 40 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      driftX: (Math.random() - 0.5) * 30,
-      driftY: (Math.random() - 0.5) * 20,
-      duration: 6 + Math.random() * 8,
-      delay: Math.random() * -10,
-      size: 4 + Math.random() * 6,
-    }));
+  const flocks = useMemo(() => {
+    const groups: Starling[] = [];
+    const flockCount = 6;
+    let id = 0;
+
+    for (let f = 0; f < flockCount; f++) {
+      const cx = 10 + Math.random() * 80;
+      const cy = 10 + Math.random() * 80;
+      const flockSize = 8 + Math.floor(Math.random() * 8);
+      const baseDriftX = (Math.random() - 0.5) * 50;
+      const baseDriftY = (Math.random() - 0.5) * 40;
+      const baseDuration = 8 + Math.random() * 10;
+
+      for (let i = 0; i < flockSize; i++) {
+        groups.push({
+          id: id++,
+          x: cx + (Math.random() - 0.5) * 12,
+          y: cy + (Math.random() - 0.5) * 8,
+          driftX: baseDriftX + (Math.random() - 0.5) * 16,
+          driftY: baseDriftY + (Math.random() - 0.5) * 12,
+          duration: baseDuration + (Math.random() - 0.5) * 4,
+          delay: Math.random() * -6,
+          size: 5 + Math.random() * 5,
+        });
+      }
+    }
+    return groups;
   }, []);
 
   return (
     <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
-      {starlings.map((s) => (
+      {flocks.map((s) => (
         <span
           key={s.id}
           className="absolute text-[hsl(var(--gb-light))] starling-drift"
@@ -40,7 +56,7 @@ function StarlingField() {
             left: `${s.x}%`,
             top: `${s.y}%`,
             fontSize: `${s.size}px`,
-            opacity: 0.06,
+            opacity: 0.15,
             animationDuration: `${s.duration}s`,
             animationDelay: `${s.delay}s`,
             ['--drift-x' as string]: `${s.driftX}px`,
