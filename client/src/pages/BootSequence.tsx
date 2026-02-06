@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAudio } from '@/hooks/use-audio';
+import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 
 export default function BootSequence() {
   const [, setLocation] = useLocation();
@@ -27,14 +28,11 @@ export default function BootSequence() {
         </button>
       ) : (
         <div className="flex flex-col items-center space-y-8 animate-in fade-in duration-500">
-          {/* TrimBoy Placeholder Sprite */}
-          <div className="w-32 h-32 border-4 border-[#9bbc0f] relative overflow-hidden flex items-center justify-center bg-[#8bac0f]">
-            <div className="w-24 h-24 bg-[#306230] rounded-sm relative">
-                <div className="absolute top-4 left-4 w-4 h-4 bg-[#9bbc0f]"></div>
-                <div className="absolute top-4 right-4 w-4 h-4 bg-[#9bbc0f]"></div>
-                <div className="absolute bottom-4 left-4 w-16 h-4 bg-[#9bbc0f]"></div>
-            </div>
-          </div>
+          <img 
+            src={trimBoySprite} 
+            alt="TrimBoy" 
+            className="w-48 h-auto pixelated"
+          />
           
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold tracking-widest">TRIMBOY</h1>
