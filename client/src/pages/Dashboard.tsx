@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { FolderArchive, Star } from "lucide-react";
+import { FolderArchive, Star, BatteryCharging } from "lucide-react";
 import { HardwareToggle } from "@/components/HardwareToggle";
 import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
 import { PowerCells } from "@/components/PowerCells";
@@ -135,8 +135,8 @@ export default function Dashboard() {
               className="retro-glow"
             >
               <span className="flex items-center gap-2">
-                <span className="inline-block w-2 h-2 bg-[hsl(var(--gb-darkest))] led-blink" />
-                6. RECHARGE
+                <BatteryCharging size={16} className="led-blink" />
+                RECHARGE
               </span>
             </RetroButton>
           </div>
