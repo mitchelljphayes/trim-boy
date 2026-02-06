@@ -19,12 +19,13 @@ export const logs = pgTable("logs", {
 });
 
 // === SCHEMAS ===
-export const insertUserSchema = createInsertSchema(users);
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertLogSchema = createInsertSchema(logs).omit({ id: true, createdAt: true });
 
 // === EXPLICIT TYPES ===
 export type User = typeof users.$inferSelect;
 export type Log = typeof logs.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertLog = z.infer<typeof insertLogSchema>;
 
 // API Request/Response Types

@@ -17,7 +17,7 @@ export default function Onboarding() {
         // Save to localStorage
         localStorage.setItem("trim_user_id", user.id.toString());
         localStorage.setItem("trim_user_name", user.name);
-        setLocation("/dashboard");
+        setLocation("/boot");
       },
     });
   };

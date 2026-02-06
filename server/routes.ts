@@ -46,7 +46,8 @@ export async function registerRoutes(
   });
 
   app.get(api.logs.getWeekly.path, async (req, res) => {
-    const userId = parseInt(req.params.userId);
+    const userIdStr = req.params.userId;
+    const userId = parseInt(userIdStr);
     if (isNaN(userId)) {
       return res.status(400).json({ message: "Invalid User ID" });
     }

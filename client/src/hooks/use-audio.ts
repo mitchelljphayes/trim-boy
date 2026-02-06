@@ -36,5 +36,13 @@ export function useAudio() {
   const playHighBeep = useCallback(() => playTone(880, 0.1), [playTone]);
   const playLowBlip = useCallback(() => playTone(440, 0.1), [playTone]);
 
-  return { playHighBeep, playLowBlip, initAudio };
+  const playStartupSound = useCallback(() => {
+    initAudio();
+    if (!audioCtx.current) return;
+    const now = audioCtx.current.currentTime;
+    playTone(523.25, 0.1); // C5
+    setTimeout(() => playTone(1046.5, 0.15), 100); // C6
+  }, [initAudio, playTone]);
+
+  return { playHighBeep, playLowBlip, playStartupSound, initAudio };
 }
