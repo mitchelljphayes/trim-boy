@@ -8,6 +8,7 @@ import { HabitGrid } from "@/components/HabitGrid";
 import { RetroButton } from "@/components/RetroButton";
 import { isRecharging } from "@/pages/Recharge";
 import { hasYogaToday } from "@/pages/Yoga";
+import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -153,6 +154,10 @@ export default function Dashboard() {
               {yogaStar && <span className="text-[8px] ml-1" style={{ color: '#FFD700' }}>COMPLETED</span>}
             </RetroButton>
           </div>
+        </div>
+
+        <div className="flex justify-center pt-6 pb-2 opacity-40">
+          <img src={trimBoySprite} alt="TrimBoy" className="w-8 h-auto pixelated" data-testid="img-trimboy-sprite" />
         </div>
       </main>
 
