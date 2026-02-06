@@ -85,4 +85,30 @@
   .text-shadow-sm {
     text-shadow: 2px 2px 0px hsl(var(--gb-light));
   }
+
+  .led-blink {
+    animation: led-pulse 1.5s step-end infinite;
+  }
+
+  .retro-glow {
+    animation: pixel-glow 2s step-end infinite;
+  }
+}
+
+@keyframes led-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes pixel-glow {
+  0%, 100% {
+    box-shadow:
+      4px 4px 0px 0px hsl(var(--gb-dark)),
+      0 0 0 2px hsl(var(--gb-dark) / 0.3);
+  }
+  50% {
+    box-shadow:
+      4px 4px 0px 0px hsl(var(--gb-dark)),
+      0 0 0 2px hsl(var(--gb-dark) / 0.1);
+  }
 }

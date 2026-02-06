@@ -132,9 +132,12 @@ export default function Dashboard() {
               onClick={() => setLocation('/recharge')} 
               fullWidth 
               disabled={isPending}
-              className="opacity-75 hover:opacity-100"
+              className="retro-glow"
             >
-              6. RECHARGE
+              <span className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 bg-[hsl(var(--gb-darkest))] led-blink" />
+                6. RECHARGE
+              </span>
             </RetroButton>
           </div>
 
