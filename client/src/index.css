@@ -272,3 +272,23 @@
   0% { opacity: 0.7; transform: scale(1); }
   100% { opacity: 1; transform: scale(1.05); }
 }
+
+/* ===== YOGA DUAL-LANGUAGE THEME ===== */
+
+.theme-classic .yoga-sanskrit-name {
+  color: #0f380f !important;
+}
+
+.theme-classic .yoga-english-name {
+  color: #0f380f !important;
+  opacity: 0.6 !important;
+}
+
+.theme-color .yoga-sanskrit-name {
+  color: #FFD700 !important;
+}
+
+.theme-color .yoga-english-name {
+  color: #E5E5E5 !important;
+  opacity: 0.6 !important;
+}

@@ -6,27 +6,28 @@ import { ArrowLeft, Pause, Play, VolumeX, Volume2, X } from 'lucide-react';
 
 interface YogaStep {
   label: string;
+  sanskritName: string;
+  englishName: string;
   duration: number;
   section: string;
 }
 
 const YOGA_SEQUENCE: YogaStep[] = [
-  { label: 'GET READY', duration: 5, section: 'PREP' },
-  { label: 'SURYA NAMASKAR A (1)', duration: 60, section: 'SUN SALUTATIONS' },
-  { label: 'SURYA NAMASKAR A (2)', duration: 60, section: 'SUN SALUTATIONS' },
-  { label: 'SURYA NAMASKAR A (3)', duration: 60, section: 'SUN SALUTATIONS' },
-  { label: 'SURYA NAMASKAR A (4)', duration: 60, section: 'SUN SALUTATIONS' },
-  { label: 'SURYA NAMASKAR A (5)', duration: 60, section: 'SUN SALUTATIONS' },
-  { label: 'PADANGUSTHASANA', duration: 150, section: 'STANDING POSES' },
-  { label: 'UTTHITA TRIKONASANA', duration: 150, section: 'STANDING POSES' },
-  { label: 'UTTHITA PARSVAKONASANA', duration: 150, section: 'STANDING POSES' },
-  { label: 'PRASARITA PADOTTANASANA', duration: 150, section: 'STANDING POSES' },
-  { label: 'PASCHIMOTTANASANA', duration: 150, section: 'SEATED & FINISHING' },
-  { label: 'PURVOTTANASANA', duration: 150, section: 'SEATED & FINISHING' },
-  { label: 'NAVASANA', duration: 150, section: 'SEATED & FINISHING' },
-  { label: 'SETU BANDHASANA', duration: 150, section: 'SEATED & FINISHING' },
-  { label: 'INVERTED CANDLE', duration: 120, section: 'CLOSING' },
-  { label: 'SAVASANA', duration: 180, section: 'CLOSING' },
+  { label: 'GET READY', sanskritName: 'GET READY', englishName: '', duration: 5, section: 'PREP' },
+  { label: 'SURYA NAMASKARA (1)', sanskritName: 'Surya Namaskara', englishName: 'Sun Salutations', duration: 60, section: 'SUN SALUTATIONS' },
+  { label: 'SURYA NAMASKARA (2)', sanskritName: 'Surya Namaskara', englishName: 'Sun Salutations', duration: 60, section: 'SUN SALUTATIONS' },
+  { label: 'SURYA NAMASKARA (3)', sanskritName: 'Surya Namaskara', englishName: 'Sun Salutations', duration: 60, section: 'SUN SALUTATIONS' },
+  { label: 'SURYA NAMASKARA (4)', sanskritName: 'Surya Namaskara', englishName: 'Sun Salutations', duration: 60, section: 'SUN SALUTATIONS' },
+  { label: 'SURYA NAMASKARA (5)', sanskritName: 'Surya Namaskara', englishName: 'Sun Salutations', duration: 60, section: 'SUN SALUTATIONS' },
+  { label: 'PADANGUSTHASANA', sanskritName: 'Padangusthasana', englishName: 'Big Toe Pose', duration: 150, section: 'STANDING POSES' },
+  { label: 'TRIKONASANA', sanskritName: 'Trikonasana', englishName: 'Triangle Pose', duration: 150, section: 'STANDING POSES' },
+  { label: 'PARSVAKONASANA', sanskritName: 'Parsvakonasana', englishName: 'Side Angle Pose', duration: 150, section: 'STANDING POSES' },
+  { label: 'PRASARITA PADOTTANASANA', sanskritName: 'Prasarita Padottanasana', englishName: 'Wide-Legged Fold', duration: 150, section: 'STANDING POSES' },
+  { label: 'PARSVOTTANASANA', sanskritName: 'Parsvottanasana', englishName: 'Pyramid Pose', duration: 150, section: 'STANDING POSES' },
+  { label: 'UTKATASANA', sanskritName: 'Utkatasana', englishName: 'Chair Pose', duration: 150, section: 'STANDING POSES' },
+  { label: 'VIRABHADRASANA', sanskritName: 'Virabhadrasana', englishName: 'Warrior Pose', duration: 150, section: 'STANDING POSES' },
+  { label: 'PASCHIMOTTANASANA', sanskritName: 'Paschimottanasana', englishName: 'Seated Forward Fold', duration: 150, section: 'SEATED & FINISHING' },
+  { label: 'SAVASANA', sanskritName: 'Savasana', englishName: 'Corpse Pose (Rest)', duration: 180, section: 'CLOSING' },
 ];
 
 const EXERCISES_ONLY = YOGA_SEQUENCE.filter(s => s.section !== 'PREP');
@@ -180,9 +181,18 @@ export default function Yoga() {
                   </span>
                 </div>
                 {sectionExercises.map((ex, i) => (
-                  <div key={i} className="text-[8px] py-0.5 flex justify-between gap-2 items-baseline" style={{ color: GOLD_LIGHT }}>
-                    <span className="truncate">{ex.label}</span>
-                    <span className="flex-shrink-0" style={{ color: GOLD_DIM }}>{formatTime(ex.duration)}</span>
+                  <div key={i} className="py-1 flex justify-between gap-2 items-start">
+                    <div className="flex flex-col truncate">
+                      <span className="text-[8px] font-bold uppercase truncate yoga-sanskrit-name" style={{ color: GOLD_LIGHT }}>
+                        {ex.sanskritName}
+                      </span>
+                      {ex.englishName && (
+                        <span className="text-[7px] truncate yoga-english-name" style={{ color: GOLD_DIM, opacity: 0.6 }}>
+                          {ex.englishName}
+                        </span>
+                      )}
+                    </div>
+                    <span className="flex-shrink-0 text-[7px] pt-0.5" style={{ color: GOLD_DIM }}>{formatTime(ex.duration)}</span>
                   </div>
                 ))}
               </div>
@@ -339,9 +349,15 @@ export default function Yoga() {
       </div>
 
       <div className="flex-shrink-0 flex flex-col items-center pb-3 px-4">
-        <h2 className="text-xs font-bold mb-3 uppercase text-center" style={{ color: GOLD }} data-testid="text-exercise">
-          {currentStep.label}
+        <h2 className="text-xs font-bold mb-1 uppercase text-center yoga-sanskrit-name" style={{ color: GOLD }} data-testid="text-exercise">
+          {currentStep.sanskritName}
         </h2>
+        {currentStep.englishName && (
+          <p className="text-[7px] mb-3 text-center yoga-english-name" style={{ color: GOLD_DIM, opacity: 0.6 }}>
+            {currentStep.englishName}
+          </p>
+        )}
+        {!currentStep.englishName && <div className="mb-3" />}
 
         <div
           className="text-5xl font-bold mb-3"
@@ -403,19 +419,31 @@ export default function Yoga() {
                       <div
                         key={idx}
                         ref={isActive ? activeRef : undefined}
-                        className="flex items-center gap-2 py-2 px-3 text-[9px] leading-tight transition-all duration-200"
+                        className="flex items-center gap-2 py-2 px-3 leading-tight transition-all duration-200"
                         style={{
                           background: isActive ? GOLD_DARK : 'transparent',
-                          color: isActive ? GOLD : isDone ? `${GOLD_DIM}60` : GOLD_LIGHT,
                         }}
                         data-testid={`menu-exercise-${idx}`}
                       >
-                        <span className={`flex-shrink-0 w-3 font-bold ${isActive ? 'animate-pulse' : ''}`} style={{ color: GOLD, visibility: isActive ? 'visible' : 'hidden' }}>
+                        <span className={`flex-shrink-0 w-3 font-bold text-[9px] ${isActive ? 'animate-pulse' : ''}`} style={{ color: GOLD, visibility: isActive ? 'visible' : 'hidden' }}>
                           {'>'}
                         </span>
-                        <span className={`flex-1 truncate uppercase font-bold ${isDone && !isActive ? 'line-through' : ''}`} style={{ opacity: isDone && !isActive ? 0.35 : 1 }}>
-                          {ex.label}
-                        </span>
+                        <div className={`flex-1 flex flex-col truncate ${isDone && !isActive ? 'line-through' : ''}`} style={{ opacity: isDone && !isActive ? 0.35 : 1 }}>
+                          <span
+                            className="text-[9px] font-bold uppercase truncate yoga-sanskrit-name"
+                            style={{ color: isActive ? GOLD : isDone ? `${GOLD_DIM}60` : GOLD_LIGHT }}
+                          >
+                            {ex.sanskritName}
+                          </span>
+                          {ex.englishName && (
+                            <span
+                              className="text-[7px] truncate yoga-english-name"
+                              style={{ color: isActive ? GOLD_DIM : GOLD_DARK, opacity: 0.6 }}
+                            >
+                              {ex.englishName}
+                            </span>
+                          )}
+                        </div>
                         <span className="flex-shrink-0 text-[8px]" style={{ color: isActive ? GOLD_DIM : GOLD_DARK }}>
                           {formatTime(ex.duration)}
                         </span>
