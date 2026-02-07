@@ -113,6 +113,15 @@ export default function Dashboard() {
   }, [evaPlaying, secretActive]);
 
   useEffect(() => {
+    if (!evaPlaying && !evaStopRef.current && !secretActive) {
+      const stop = playEvangelion();
+      evaStopRef.current = stop;
+      setEvaPlaying(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (secretStopRef.current) {
         secretStopRef.current();
