@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
-import { FolderArchive, Star, BatteryCharging } from "lucide-react";
+import { FolderArchive, Star, BatteryCharging, Music, VolumeX } from "lucide-react";
 import { HardwareToggle } from "@/components/HardwareToggle";
 import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
 import { PowerCells } from "@/components/PowerCells";
@@ -10,6 +10,7 @@ import { isRecharging } from "@/pages/Recharge";
 import { hasYogaToday } from "@/pages/Yoga";
 import { checkAndUpdateStreak, getStreak, isProtocolComplete } from "@/lib/streakManager";
 import { playSecretCream } from "@/lib/chiptune";
+import { playEvangelion } from "@/lib/evangelion";
 import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 
 export default function Dashboard() {
@@ -23,6 +24,8 @@ export default function Dashboard() {
   const [secretActive, setSecretActive] = useState(false);
   const [secretFlash, setSecretFlash] = useState(false);
   const secretStopRef = useRef<(() => void) | null>(null);
+  const [evaPlaying, setEvaPlaying] = useState(false);
+  const evaStopRef = useRef<(() => void) | null>(null);
   const lastCheckedStats = useRef<string>("");
 
   useEffect(() => {
@@ -78,17 +81,44 @@ export default function Dashboard() {
       setSecretActive(false);
       return;
     }
+    if (evaPlaying && evaStopRef.current) {
+      evaStopRef.current();
+      evaStopRef.current = null;
+      setEvaPlaying(false);
+    }
     setSecretFlash(true);
     setTimeout(() => setSecretFlash(false), 600);
     const stop = playSecretCream();
     secretStopRef.current = stop;
     setSecretActive(true);
-  }, [secretActive]);
+  }, [secretActive, evaPlaying]);
+
+  const handleEvaToggle = useCallback(() => {
+    if (evaPlaying) {
+      if (evaStopRef.current) {
+        evaStopRef.current();
+        evaStopRef.current = null;
+      }
+      setEvaPlaying(false);
+      return;
+    }
+    if (secretActive && secretStopRef.current) {
+      secretStopRef.current();
+      secretStopRef.current = null;
+      setSecretActive(false);
+    }
+    const stop = playEvangelion();
+    evaStopRef.current = stop;
+    setEvaPlaying(true);
+  }, [evaPlaying, secretActive]);
 
   useEffect(() => {
     return () => {
       if (secretStopRef.current) {
         secretStopRef.current();
+      }
+      if (evaStopRef.current) {
+        evaStopRef.current();
       }
     };
   }, []);
@@ -111,6 +141,17 @@ export default function Dashboard() {
             {recharging ? 'SYS:RCH' : 'TRIMCORP'}
           </span>
           <HardwareToggle />
+          <button
+            className={`p-2 border-2 transition-colors ${evaPlaying ? 'bg-[hsl(var(--gb-dark))] border-[hsl(var(--gb-darkest))]' : 'hover:bg-[hsl(var(--gb-light))] border-transparent hover:border-[hsl(var(--gb-dark))]'}`}
+            title={evaPlaying ? "Stop Music" : "Play Music"}
+            onClick={handleEvaToggle}
+            data-testid="button-eva-music"
+          >
+            {evaPlaying
+              ? <VolumeX className="w-5 h-5 text-[hsl(var(--gb-lightest))]" />
+              : <Music className="w-5 h-5 text-[hsl(var(--gb-darkest))]" />
+            }
+          </button>
           <button 
             className="p-2 hover:bg-[hsl(var(--gb-light))] border-2 border-transparent hover:border-[hsl(var(--gb-dark))] transition-colors"
             title="Archive"
