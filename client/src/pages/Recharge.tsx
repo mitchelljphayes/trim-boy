@@ -4,6 +4,7 @@ import { startOfWeek, format } from 'date-fns';
 import { ArrowLeft, X } from 'lucide-react';
 import { RetroButton } from '@/components/RetroButton';
 import rechargeSprite from '@assets/trimboyrest_1770442682195.png';
+import burnoutSprite from '@assets/trimboy_burnout_1770442789993.png';
 
 const ANIME = [
   { title: 'Cowboy Bebop', desc: 'Space bounty hunters and jazz. The ultimate cool-down.' },
@@ -213,13 +214,13 @@ export default function Recharge() {
   if (alreadyUsed && !showLibrary) {
     return (
       <div className="min-h-screen bg-[hsl(var(--gb-lightest))] flex flex-col items-center justify-center p-6 text-center">
-        <pre
-          className="text-[7px] text-[hsl(var(--gb-darkest))] leading-tight mb-6 select-none"
-          style={{ fontFamily: "'Press Start 2P', monospace" }}
-          data-testid="text-disappointed"
-        >
-          {TRIMBOY_DISAPPOINTED}
-        </pre>
+        <img
+          src={burnoutSprite}
+          alt="TrimBoy Burnout"
+          className="w-36 h-36 object-contain mb-6"
+          style={{ imageRendering: 'pixelated' }}
+          data-testid="img-burnout-sprite"
+        />
 
         <p className="text-[9px] text-[hsl(var(--gb-darkest))] font-bold uppercase leading-relaxed mb-8 max-w-xs" data-testid="text-warning">
           COME ON TRIMBOY... YOU ALREADY RECHARGED THIS WEEK.
