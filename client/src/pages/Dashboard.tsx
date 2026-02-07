@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { FolderArchive, Star, BatteryCharging } from "lucide-react";
 import { HardwareToggle } from "@/components/HardwareToggle";
@@ -9,6 +9,7 @@ import { RetroButton } from "@/components/RetroButton";
 import { isRecharging } from "@/pages/Recharge";
 import { hasYogaToday } from "@/pages/Yoga";
 import { checkAndUpdateStreak, getStreak, isProtocolComplete } from "@/lib/streakManager";
+import { playSecretCream } from "@/lib/chiptune";
 import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 
 export default function Dashboard() {
@@ -19,6 +20,9 @@ export default function Dashboard() {
   const [yogaStar, setYogaStar] = useState(hasYogaToday);
   const [streak, setStreak] = useState(getStreak);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [secretActive, setSecretActive] = useState(false);
+  const [secretFlash, setSecretFlash] = useState(false);
+  const secretStopRef = useRef<(() => void) | null>(null);
   const lastCheckedStats = useRef<string>("");
 
   useEffect(() => {
@@ -64,6 +68,30 @@ export default function Dashboard() {
   }, [stats]);
 
   const protocolComplete = stats ? isProtocolComplete(stats.strengthCount, stats.runCount) : false;
+
+  const handleSecretTap = useCallback(() => {
+    if (secretActive) {
+      if (secretStopRef.current) {
+        secretStopRef.current();
+        secretStopRef.current = null;
+      }
+      setSecretActive(false);
+      return;
+    }
+    setSecretFlash(true);
+    setTimeout(() => setSecretFlash(false), 600);
+    const stop = playSecretCream();
+    secretStopRef.current = stop;
+    setSecretActive(true);
+  }, [secretActive]);
+
+  useEffect(() => {
+    return () => {
+      if (secretStopRef.current) {
+        secretStopRef.current();
+      }
+    };
+  }, []);
 
   if (!userId) return null;
 
@@ -227,9 +255,45 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="flex justify-center pt-6 pb-2">
-          <img src={trimBoySprite} alt="TrimBoy" className="w-8 h-auto pixelated" data-testid="img-trimboy-sprite" />
+        <div className="flex flex-col items-center pt-6 pb-2 gap-1">
+          <button
+            onClick={handleSecretTap}
+            className="relative focus:outline-none"
+            data-testid="button-secret-sprite"
+          >
+            <img
+              src={trimBoySprite}
+              alt="TrimBoy"
+              className={`w-8 h-auto pixelated ${secretActive ? 'secret-sprite-bounce' : ''}`}
+              data-testid="img-trimboy-sprite"
+            />
+            {secretActive && (
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-[hsl(var(--gb-darkest))] secret-led-blink" />
+            )}
+          </button>
+          {secretActive && (
+            <div className="flex flex-col items-center gap-0.5 mt-1" data-testid="secret-now-playing">
+              <span className="text-[6px] text-[hsl(var(--gb-dark))] uppercase tracking-[3px]">
+                NOW PLAYING
+              </span>
+              <span className="text-[7px] text-[hsl(var(--gb-darkest))] uppercase tracking-widest font-bold">
+                C.R.E.A.M.
+              </span>
+              <div className="flex gap-[2px] mt-0.5">
+                {[0,1,2,3].map(i => (
+                  <div
+                    key={i}
+                    className="w-[3px] bg-[hsl(var(--gb-darkest))] secret-eq-bar"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+        {secretFlash && (
+          <div className="fixed inset-0 z-[9998] bg-[hsl(var(--gb-lightest))] pointer-events-none secret-flash-overlay" />
+        )}
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))] text-[10px] p-2 flex justify-between px-4 z-50">

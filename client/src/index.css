@@ -720,3 +720,46 @@
   color: #E5E5E5 !important;
   opacity: 0.6 !important;
 }
+
+/* ===== SECRET EVENT ===== */
+
+.secret-sprite-bounce {
+  animation: secret-bounce 0.65s steps(4) infinite;
+}
+
+@keyframes secret-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.secret-led-blink {
+  animation: secret-led 0.5s steps(2) infinite;
+}
+
+@keyframes secret-led {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.secret-eq-bar {
+  height: 4px;
+  animation: secret-eq 0.6s steps(3) infinite alternate;
+}
+
+@keyframes secret-eq {
+  0% { height: 2px; }
+  33% { height: 6px; }
+  66% { height: 4px; }
+  100% { height: 8px; }
+}
+
+.secret-flash-overlay {
+  animation: secret-flash 0.6s steps(4) forwards;
+}
+
+@keyframes secret-flash {
+  0% { opacity: 1; }
+  25% { opacity: 0; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0; }
+}

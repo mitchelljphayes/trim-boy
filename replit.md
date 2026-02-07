@@ -100,5 +100,13 @@ All API routes are defined as objects with `method`, `path`, `input` (Zod schema
 - **StormBackground** (`components/StormBackground.tsx`): Global atmospheric component rendering random lightning flashes (every 5-10s) and 8-bit SVG lightning bolts behind UI.
 - **Evolution Events**: Logged as milestones (GBC_UNLOCK, GOLD_UNLOCK, LIGHTNING_UNLOCK) and displayed in Archive's Evolution Timeline section.
 
+### Secret Event (`lib/chiptune.ts`)
+- **Trigger**: Tap TrimBoy sprite at bottom of Dashboard
+- **Audio**: 8-bit chiptune cover of C.R.E.A.M. (Wu-Tang Clan) using Web Audio API
+- **4 Game Boy Channels**: Square Wave 1 (melody), Square Wave 2 (harmony), Wave/Triangle (bass), Noise (drums via LFSR)
+- **Architecture**: Shared AudioContext singleton, master GainNode for instant stop, looping 4-bar pattern at 92 BPM
+- **Visual Feedback**: Screen flash, bouncing sprite, LED blink indicator, equalizer bars, "NOW PLAYING" label
+- **Toggle**: Tap sprite to start, tap again to stop immediately
+
 ### No External Auth
 Authentication is not implemented. User identity is based on a simple name lookup stored in localStorage on the client side.
