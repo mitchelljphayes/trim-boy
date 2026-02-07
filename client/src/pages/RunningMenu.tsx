@@ -12,7 +12,6 @@ export default function RunningMenu() {
         src={runSprite}
         alt="TrimBoy Running"
         className="w-24 h-24 object-contain mb-4 pixelated"
-        style={{ imageRendering: 'pixelated' }}
         data-testid="img-run-sprite"
       />
       <h1 className="text-xl font-bold text-[hsl(var(--gb-darkest))] mb-2" data-testid="text-title">

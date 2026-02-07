@@ -290,7 +290,6 @@ function HallOfFame({ milestones, totalMastery }: { milestones: Milestone[]; tot
           src={goldTrimBoy}
           alt="Golden TrimBoy - Lifetime Achievement"
           className="w-24 h-auto pixelated mb-2"
-          style={{ imageRendering: 'pixelated' }}
           data-testid="img-hall-of-fame-sprite"
         />
         <p className="text-[7px] uppercase tracking-widest" style={{ color: '#B8860B' }}>

@@ -172,8 +172,7 @@ export default function TimerPage(config: RoutineConfig) {
           <img
             src={spriteUrl}
             alt={`${title} sprite`}
-            className="w-48 h-auto mb-4 pixelated"
-            style={{ imageRendering: 'pixelated' }}
+            className="w-24 h-24 object-contain mb-4 pixelated"
             data-testid="img-briefing-sprite"
           />
         )}

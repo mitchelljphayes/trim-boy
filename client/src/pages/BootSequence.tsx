@@ -207,7 +207,6 @@ export default function BootSequence() {
             src={lightningTrimBoy}
             alt="Lightning TrimBoy"
             className="w-40 h-auto pixelated mb-8"
-            style={{ imageRendering: 'pixelated' }}
             data-testid="img-storm-trimboy"
           />
 
@@ -245,7 +244,6 @@ export default function BootSequence() {
             src={goldTrimBoy}
             alt="Golden TrimBoy with Falcon"
             className="w-40 h-auto pixelated mb-8"
-            style={{ imageRendering: 'pixelated' }}
             data-testid="img-gold-trimboy"
           />
 

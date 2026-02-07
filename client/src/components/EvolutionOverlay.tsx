@@ -142,7 +142,6 @@ function FlameTransition({ onComplete }: { onComplete: () => void }) {
             src={goldTrimBoy}
             alt="Golden TrimBoy"
             className="w-32 h-auto pixelated gold-sprite-fadein"
-            style={{ imageRendering: 'pixelated' }}
             data-testid="img-evolution-gold-sprite"
           />
           <p
@@ -247,7 +246,6 @@ function LightningTransition({ onComplete }: { onComplete: () => void }) {
               src={lightningTrimBoy}
               alt="Lightning TrimBoy"
               className="w-32 h-auto pixelated storm-sprite-fadein relative z-10"
-              style={{ imageRendering: 'pixelated' }}
               data-testid="img-evolution-storm-sprite"
             />
             <div

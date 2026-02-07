@@ -247,8 +247,7 @@ export default function Breathwork() {
           <img
             src={medSprite}
             alt="TrimBoy Meditating"
-            className="w-24 h-24 object-contain mb-4 mx-auto"
-            style={{ imageRendering: 'pixelated' }}
+            className="w-24 h-24 object-contain mb-4 mx-auto pixelated"
             data-testid="img-breathwork-sprite"
           />
           <h1 className="text-xl font-bold mb-4 text-[hsl(var(--gb-lightest))]" data-testid="text-title">BREATHWORK</h1>

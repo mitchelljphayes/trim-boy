@@ -96,9 +96,7 @@
   display: none;
 }
 
-.theme-storm img.pixelated,
-.theme-storm img[data-testid="img-briefing-sprite"],
-.theme-storm img[data-testid="img-trimboy-sprite"] {
+.theme-storm img.pixelated {
   filter: none;
 }
 
@@ -187,9 +185,7 @@
   display: none;
 }
 
-.theme-gold img.pixelated,
-.theme-gold img[data-testid="img-briefing-sprite"],
-.theme-gold img[data-testid="img-trimboy-sprite"] {
+.theme-gold img.pixelated {
   filter: url(#gold-palette);
 }
 
@@ -263,15 +259,11 @@
   display: none;
 }
 
-.theme-classic img.pixelated,
-.theme-classic img[data-testid="img-briefing-sprite"],
-.theme-classic img[data-testid="img-trimboy-sprite"] {
+.theme-classic img.pixelated {
   filter: url(#dmg-palette);
 }
 
-.theme-color img.pixelated,
-.theme-color img[data-testid="img-briefing-sprite"],
-.theme-color img[data-testid="img-trimboy-sprite"] {
+.theme-color img.pixelated {
   filter: none;
 }
 
