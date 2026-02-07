@@ -112,7 +112,7 @@ export function HardwareToggle() {
 
   function getNextLockedTier(): LockedNotification | null {
     if (!gbcAvailable) {
-      return { name: "GBC COLOR", requirement: "1-WEEK STREAK", color: "#68b898", bgColor: "#0d2818" };
+      return { name: "GBC COLOR", requirement: "1-WEEK STREAK", color: "#9bbc0f", bgColor: "#0f380f" };
     }
     if (!goldUnlocked) {
       return { name: "GOLD EDITION", requirement: "2-WEEK STREAK", color: "#FFD700", bgColor: "#2d1b00" };

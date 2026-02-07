@@ -169,9 +169,9 @@
 
 .locked-tier-popup-req {
   font-size: 5px;
-  color: #aaa;
+  color: var(--popup-color, #aaa);
   letter-spacing: 1px;
-  opacity: 0.8;
+  opacity: 0.6;
 }
 
 @keyframes locked-popup-in {
