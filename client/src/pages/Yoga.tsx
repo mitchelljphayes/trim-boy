@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { useAudio } from '@/hooks/use-audio';
 import { RetroButton } from '@/components/RetroButton';
 import { ArrowLeft, Pause, Play, VolumeX, Volume2, X } from 'lucide-react';
+import ashtangaSprite from '@assets/trimboy_sashtanga_1770441896395.png';
 
 interface YogaStep {
   label: string;
@@ -150,6 +151,13 @@ export default function Yoga() {
 
     return (
       <div className="min-h-screen p-6 flex flex-col items-center justify-center text-center bg-[hsl(var(--gb-lightest))]">
+        <img
+          src={ashtangaSprite}
+          alt="TrimBoy Ashtanga"
+          className="w-24 h-24 object-contain mb-4"
+          style={{ imageRendering: 'pixelated' }}
+          data-testid="img-ashtanga-sprite"
+        />
         <h1 className="text-xl font-bold mb-2 text-[hsl(var(--gb-darkest))]" data-testid="text-title">
           ASHTANGA FLOW
         </h1>
