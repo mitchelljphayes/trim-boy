@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { startOfWeek, format } from 'date-fns';
-import { ArrowLeft, X } from 'lucide-react';
-import { RetroButton } from '@/components/RetroButton';
+import { ArrowLeft } from 'lucide-react';
 import rechargeSprite from '@assets/trimboyrest_1770442682195.png';
 import burnoutSprite from '@assets/trimboy_burnout_1770442789993.png';
 
@@ -22,19 +21,6 @@ const HIPHOP = [
   { artist: 'Souls of Mischief', album: "93 'til Infinity", desc: 'The ultimate soundtrack for a summer afternoon.' },
 ];
 
-const TRIMBOY_DISAPPOINTED = `
-    ___________
-   |  _______  |
-   | |  x  x | |
-   | |   __  | |
-   | |  (__) | |
-   | |_______| |
-   |___________|
-   |  _  _  _  |
-   | |_||_||_| |
-   |___________|
-`;
-
 function getWeekKey(): string {
   const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
   return format(monday, 'yyyy-MM-dd');
@@ -45,96 +31,39 @@ export function hasRechargedThisWeek(): boolean {
   return stored === getWeekKey();
 }
 
-function markRecharged(): void {
-  localStorage.setItem('trim_recharge_week', getWeekKey());
-}
-
-function setRecharging(active: boolean): void {
-  if (active) {
-    localStorage.setItem('trim_recharging', 'true');
-  } else {
-    localStorage.removeItem('trim_recharging');
+function seededRandom(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
   }
-  window.dispatchEvent(new Event('recharge-status-change'));
+  return Math.abs(hash);
 }
 
-export function isRecharging(): boolean {
-  return localStorage.getItem('trim_recharging') === 'true';
-}
-
-function getRandomPair(): { anime: typeof ANIME[0]; hiphop: typeof HIPHOP[0] } {
+function getWeeklyPrescription(): { anime: typeof ANIME[0]; hiphop: typeof HIPHOP[0] } {
+  const weekKey = getWeekKey();
+  const seed = seededRandom(weekKey);
   return {
-    anime: ANIME[Math.floor(Math.random() * ANIME.length)],
-    hiphop: HIPHOP[Math.floor(Math.random() * HIPHOP.length)],
+    anime: ANIME[seed % ANIME.length],
+    hiphop: HIPHOP[(seed * 7) % HIPHOP.length],
   };
 }
 
 export default function Recharge() {
   const [, setLocation] = useLocation();
-  const [alreadyUsed] = useState(() => hasRechargedThisWeek());
+  const [alreadyViewed] = useState(() => hasRechargedThisWeek());
   const [glitching, setGlitching] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
-  const [prescription] = useState(() => getRandomPair());
-  const [rechargeActive, setRechargeActive] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [prescription] = useState(() => getWeeklyPrescription());
 
   useEffect(() => {
-    if (!alreadyUsed) {
-      markRecharged();
+    if (!alreadyViewed) {
+      localStorage.setItem('trim_recharge_week', getWeekKey());
       setShowLibrary(true);
     }
-  }, [alreadyUsed]);
+  }, [alreadyViewed]);
 
-  const enterLibrary = useCallback(() => {
-    markRecharged();
-    setShowLibrary(true);
-  }, []);
-
-  const forceOverride = useCallback(() => {
-    setGlitching(true);
-    setTimeout(() => {
-      setGlitching(false);
-      enterLibrary();
-    }, 1500);
-  }, [enterLibrary]);
-
-  const startRecharge = useCallback(() => {
-    setRechargeActive(true);
-    setRecharging(true);
-    setProgress(0);
-  }, []);
-
-  useEffect(() => {
-    if (!rechargeActive) return;
-
-    const duration = 30000;
-    const interval = 100;
-    const step = (interval / duration) * 100;
-
-    const timer = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(timer);
-          setRecharging(false);
-          setTimeout(() => setLocation('/dashboard'), 1500);
-          return 100;
-        }
-        return p + step;
-      });
-    }, interval);
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, [rechargeActive, setLocation]);
-
-  useEffect(() => {
-    return () => {
-      setRecharging(false);
-    };
-  }, []);
-
-  // === GLITCH SCREEN ===
   if (glitching) {
     return (
       <div className="min-h-screen bg-[hsl(var(--gb-darkest))] flex items-center justify-center relative overflow-hidden">
@@ -163,55 +92,7 @@ export default function Recharge() {
     );
   }
 
-  // === RECHARGE IN PROGRESS ===
-  if (rechargeActive) {
-    const cancelRecharge = () => {
-      localStorage.removeItem('trim_recharge_week');
-      localStorage.removeItem('trim_recharging');
-      window.dispatchEvent(new Event('recharge-status-change'));
-      setLocation('/dashboard');
-    };
-    return (
-      <div className="min-h-screen bg-[hsl(var(--gb-darkest))] flex flex-col items-center justify-center p-6 relative">
-        <button
-          onClick={cancelRecharge}
-          className="absolute top-4 right-4 text-[hsl(var(--gb-light))]/50 hover:text-[hsl(var(--gb-lightest))] transition-colors p-2"
-          data-testid="button-cancel-recharge"
-          title="Cancel recharge"
-        >
-          <X size={20} />
-        </button>
-        <p className="text-[9px] text-[hsl(var(--gb-light))] uppercase tracking-widest mb-4">
-          SYSTEM: RECHARGING
-        </p>
-        <h2 className="text-sm font-bold text-[hsl(var(--gb-lightest))] mb-8" data-testid="text-recharging">
-          RECHARGE IN PROGRESS
-        </h2>
-
-        <div className="w-full max-w-xs mb-8">
-          <div className="w-full h-4 border-2 border-[hsl(var(--gb-light))] p-0.5">
-            <div
-              className="h-full bg-[hsl(var(--gb-lightest))] transition-all duration-100"
-              style={{ width: `${Math.min(progress, 100)}%` }}
-              data-testid="recharge-bar"
-            />
-          </div>
-          <p className="text-[8px] text-[hsl(var(--gb-light))]/50 text-center mt-2 uppercase tracking-widest">
-            {Math.min(Math.floor(progress), 100)}%
-          </p>
-        </div>
-
-        {progress >= 100 && (
-          <p className="text-[10px] text-[hsl(var(--gb-lightest))] animate-pulse">
-            RECHARGE COMPLETE
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  // === DISAPPOINTED SCREEN (already recharged this week) ===
-  if (alreadyUsed && !showLibrary) {
+  if (alreadyViewed && !showLibrary) {
     return (
       <div className="min-h-screen bg-[hsl(var(--gb-lightest))] flex flex-col items-center justify-center p-6 text-center">
         <img
@@ -221,8 +102,12 @@ export default function Recharge() {
           data-testid="img-burnout-sprite"
         />
 
-        <p className="text-[9px] text-[hsl(var(--gb-darkest))] font-bold uppercase leading-relaxed mb-8 max-w-xs" data-testid="text-warning">
-          COME ON TRIMBOY... YOU ALREADY RECHARGED THIS WEEK.
+        <p className="text-[9px] text-[hsl(var(--gb-darkest))] font-bold uppercase leading-relaxed mb-4 max-w-xs" data-testid="text-warning">
+          COME ON TRIMBOY... YOU ALREADY GOT YOUR PRESCRIPTION THIS WEEK.
+        </p>
+
+        <p className="text-[7px] text-[hsl(var(--gb-dark))] uppercase tracking-widest mb-8 max-w-xs leading-relaxed" data-testid="text-weekly-hint">
+          NEW PRESCRIPTIONS DROP EVERY MONDAY
         </p>
 
         <button
@@ -234,17 +119,22 @@ export default function Recharge() {
         </button>
 
         <button
-          onClick={forceOverride}
+          onClick={() => {
+            setGlitching(true);
+            setTimeout(() => {
+              setGlitching(false);
+              setShowLibrary(true);
+            }, 1500);
+          }}
           className="text-[7px] text-[hsl(var(--gb-dark))]/25 uppercase tracking-widest hover:text-[hsl(var(--gb-dark))]/60 transition-colors"
           data-testid="button-force-override"
         >
-          [FORCE SYSTEM OVERRIDE]
+          [VIEW AGAIN]
         </button>
       </div>
     );
   }
 
-  // === CULTURE LIBRARY ===
   return (
     <div className="min-h-screen bg-[hsl(var(--gb-lightest))] p-6 flex flex-col items-center">
       <img
@@ -253,14 +143,13 @@ export default function Recharge() {
         className="w-32 h-32 object-contain mb-4 pixelated"
         data-testid="img-recharge-sprite"
       />
-      <h1 className="text-lg font-bold text-[hsl(var(--gb-darkest))] mb-2 text-center" data-testid="text-title">
-        RECHARGE LIBRARY
+      <h1 className="text-sm font-bold text-[hsl(var(--gb-darkest))] mb-2 text-center" data-testid="text-title">
+        WEEKLY PRESCRIPTION
       </h1>
       <p className="text-[8px] text-[hsl(var(--gb-dark))] uppercase tracking-widest mb-8">
-        Cultural Prescriptions
+        YOUR CULTURAL RX
       </p>
 
-      {/* Anime Prescription */}
       <div className="w-full max-w-xs mb-6">
         <div className="border-2 border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-light))] p-4">
           <p className="text-[8px] text-[hsl(var(--gb-dark))] uppercase tracking-widest mb-2">
@@ -275,7 +164,6 @@ export default function Recharge() {
         </div>
       </div>
 
-      {/* Hip-Hop Prescription */}
       <div className="w-full max-w-xs mb-8">
         <div className="border-2 border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-light))] p-4">
           <p className="text-[8px] text-[hsl(var(--gb-dark))] uppercase tracking-widest mb-2">
@@ -292,11 +180,6 @@ export default function Recharge() {
           </p>
         </div>
       </div>
-
-      {/* Start Recharge */}
-      <RetroButton onClick={startRecharge} className="w-full max-w-xs mb-4" data-testid="button-recharge">
-        BEGIN RECHARGE
-      </RetroButton>
 
       <button
         onClick={() => setLocation('/dashboard')}

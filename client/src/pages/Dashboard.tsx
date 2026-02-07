@@ -6,7 +6,6 @@ import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
 import { PowerCells } from "@/components/PowerCells";
 import { HabitGrid } from "@/components/HabitGrid";
 import { RetroButton } from "@/components/RetroButton";
-import { isRecharging } from "@/pages/Recharge";
 import { hasYogaToday } from "@/pages/Yoga";
 import { checkAndUpdateStreak, getStreak, isProtocolComplete } from "@/lib/streakManager";
 import { playSecretCream } from "@/lib/chiptune";
@@ -17,7 +16,6 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<number | null>(null);
   const [userName, setUserName] = useState<string>("");
-  const [recharging, setRechargingState] = useState(isRecharging);
   const [yogaStar, setYogaStar] = useState(hasYogaToday);
   const [streak, setStreak] = useState(getStreak);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -40,12 +38,6 @@ export default function Dashboard() {
     setUserId(parseInt(storedId));
     setUserName(storedName);
   }, [setLocation]);
-
-  useEffect(() => {
-    const handler = () => setRechargingState(isRecharging());
-    window.addEventListener('recharge-status-change', handler);
-    return () => window.removeEventListener('recharge-status-change', handler);
-  }, []);
 
   useEffect(() => {
     const handler = () => setYogaStar(hasYogaToday());
@@ -160,10 +152,10 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-1">
           <span
-            className={`text-[8px] uppercase tracking-widest mr-1 ${recharging ? 'text-[hsl(var(--gb-dark))] animate-pulse' : 'text-[hsl(var(--gb-dark))]/50'}`}
+            className="text-[8px] uppercase tracking-widest mr-1 text-[hsl(var(--gb-dark))]/50"
             data-testid="text-system-status"
           >
-            {recharging ? 'SYS:RCH' : 'TRIMCORP'}
+            TRIMCORP
           </span>
           <HardwareToggle />
           <button
@@ -314,7 +306,7 @@ export default function Dashboard() {
               className="retro-glow"
             >
               <span className="flex items-center gap-2">
-                <BatteryCharging size={16} className={recharging ? "led-blink" : ""} />
+                <BatteryCharging size={16} />
                 RECHARGE
               </span>
             </RetroButton>
@@ -402,7 +394,7 @@ export default function Dashboard() {
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))] text-[10px] p-2 flex justify-between px-4 z-50">
-        <span data-testid="text-status-bar">{recharging ? 'STATUS: RECHARGING' : 'STATUS: ONLINE'}</span>
+        <span data-testid="text-status-bar">STATUS: ONLINE</span>
         <span>BATTERY: 100%</span>
       </div>
     </div>
