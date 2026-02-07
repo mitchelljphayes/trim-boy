@@ -48,6 +48,74 @@ export function useAudio() {
     setTimeout(() => playTone(1046.5, 0.15), 100);
   }, [initAudio, playTone]);
 
+  const playBootIdent = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const notes = [
+      { freq: 131, time: 0, dur: 0.08 },
+      { freq: 165, time: 0.06, dur: 0.08 },
+      { freq: 196, time: 0.12, dur: 0.08 },
+      { freq: 262, time: 0.18, dur: 0.12 },
+      { freq: 330, time: 0.28, dur: 0.12 },
+      { freq: 392, time: 0.38, dur: 0.12 },
+      { freq: 523, time: 0.48, dur: 0.15 },
+      { freq: 659, time: 0.60, dur: 0.18 },
+      { freq: 784, time: 0.74, dur: 0.35 },
+      { freq: 1047, time: 0.90, dur: 0.55 },
+    ];
+
+    notes.forEach(({ freq, time, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, now + time);
+      gain.gain.setValueAtTime(0.07, now + time);
+      gain.gain.setValueAtTime(0.07, now + time + dur * 0.6);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + time + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + time);
+      osc.stop(now + time + dur);
+    });
+
+    const bass = ctx.createOscillator();
+    const bassGain = ctx.createGain();
+    bass.type = 'triangle';
+    bass.frequency.setValueAtTime(65.4, now);
+    bass.frequency.linearRampToValueAtTime(131, now + 0.9);
+    bassGain.gain.setValueAtTime(0.06, now);
+    bassGain.gain.setValueAtTime(0.06, now + 0.8);
+    bassGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+    bass.connect(bassGain);
+    bassGain.connect(ctx.destination);
+    bass.start(now);
+    bass.stop(now + 1.4);
+  }, [initAudio]);
+
+  const playPressStart = useCallback(() => {
+    if (mutedRef.current) return;
+    initAudio();
+    if (!audioCtx.current) return;
+    const ctx = audioCtx.current;
+    const now = ctx.currentTime;
+
+    const blip = ctx.createOscillator();
+    const blipGain = ctx.createGain();
+    blip.type = 'square';
+    blip.frequency.setValueAtTime(1047, now);
+    blip.frequency.setValueAtTime(1319, now + 0.04);
+    blipGain.gain.setValueAtTime(0.1, now);
+    blipGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+    blip.connect(blipGain);
+    blipGain.connect(ctx.destination);
+    blip.start(now);
+    blip.stop(now + 0.12);
+  }, [initAudio]);
+
   const playCelebratoryIdent = useCallback(() => {
     playTone(523.25, 0.12);          // C5
     setTimeout(() => playTone(659.25, 0.12), 120);  // E5
@@ -366,5 +434,5 @@ export function useAudio() {
     shimmer.stop(now + 2.0);
   }, [initAudio]);
 
-  return { playHighBeep, playLowBlip, playStartupSound, playCelebratoryIdent, playGentleIdent, playInhaleSweep, playExhaleSweep, playHoldChime, playGoldenChime, playFireworksBurst, playFlameRoar, playThunderclap, playStormChime, initAudio, setMuted };
+  return { playHighBeep, playLowBlip, playStartupSound, playBootIdent, playPressStart, playCelebratoryIdent, playGentleIdent, playInhaleSweep, playExhaleSweep, playHoldChime, playGoldenChime, playFireworksBurst, playFlameRoar, playThunderclap, playStormChime, initAudio, setMuted };
 }

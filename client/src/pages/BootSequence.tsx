@@ -97,7 +97,7 @@ function TypewriterText({ text, startDelay = 2000 }: { text: string; startDelay?
 
 export default function BootSequence() {
   const [, setLocation] = useLocation();
-  const { playStartupSound, playGoldenChime, playStormChime, initAudio } = useAudio();
+  const { playBootIdent, playPressStart, playGoldenChime, playStormChime, initAudio } = useAudio();
   const [started, setStarted] = useState(false);
   const [flashing, setFlashing] = useState(false);
   const [showEvolution, setShowEvolution] = useState(false);
@@ -181,9 +181,10 @@ export default function BootSequence() {
 
   const handleStandardStart = () => {
     initAudio();
+    playPressStart();
     setStarted(true);
-    playStartupSound();
-    setTimeout(() => setLocation('/dashboard'), 2500);
+    setTimeout(() => playBootIdent(), 300);
+    setTimeout(() => setLocation('/dashboard'), 2800);
   };
 
   if (showEvolution) {
