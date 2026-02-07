@@ -244,12 +244,17 @@ export default function Breathwork() {
         </div>
 
         <div className="relative z-10">
-          <img
-            src={medSprite}
-            alt="TrimBoy Meditating"
-            className="w-32 h-32 object-contain mb-4 mx-auto pixelated"
-            data-testid="img-breathwork-sprite"
-          />
+          <div
+            className="w-32 h-32 mb-4 mx-auto relative"
+            style={{ filter: 'drop-shadow(0 0 6px hsl(var(--gb-light))) drop-shadow(0 0 12px hsl(var(--gb-light)))' }}
+          >
+            <img
+              src={medSprite}
+              alt="TrimBoy Meditating"
+              className="w-full h-full object-contain pixelated"
+              data-testid="img-breathwork-sprite"
+            />
+          </div>
           <h1 className="text-xl font-bold mb-4 text-[hsl(var(--gb-lightest))]" data-testid="text-title">BREATHWORK</h1>
           <p className="text-[9px] text-[hsl(var(--gb-light))] uppercase tracking-widest mb-2">Box Breathing / 4-4-4-4</p>
           <p className="text-[9px] text-[hsl(var(--gb-light))] uppercase tracking-widest mb-8">5 Minutes / {TOTAL_CYCLES} Cycles</p>
