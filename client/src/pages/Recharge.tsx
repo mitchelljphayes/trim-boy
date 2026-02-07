@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { startOfWeek, format } from 'date-fns';
 import { ArrowLeft, X } from 'lucide-react';
 import { RetroButton } from '@/components/RetroButton';
-import rechargeSprite from '@assets/trimboyrest_1770442003899.png';
+import rechargeSprite from '@assets/trimboyrest_1770442682195.png';
 
 const ANIME = [
   { title: 'Cowboy Bebop', desc: 'Space bounty hunters and jazz. The ultimate cool-down.' },
