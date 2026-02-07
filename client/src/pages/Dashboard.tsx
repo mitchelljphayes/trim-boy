@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
-import { FolderArchive, Star, BatteryCharging, Music, VolumeX } from "lucide-react";
+import { FolderArchive, Star, BatteryCharging, Music, VolumeX, Power } from "lucide-react";
 import { HardwareToggle } from "@/components/HardwareToggle";
 import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
 import { PowerCells } from "@/components/PowerCells";
@@ -120,6 +120,22 @@ export default function Dashboard() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const handleReset = useCallback(() => {
+    if (secretStopRef.current) {
+      secretStopRef.current();
+      secretStopRef.current = null;
+    }
+    if (evaStopRef.current) {
+      evaStopRef.current();
+      evaStopRef.current = null;
+    }
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('trim_'));
+    keys.forEach(k => localStorage.removeItem(k));
+    setLocation('/');
+  }, [setLocation]);
 
   useEffect(() => {
     return () => {
@@ -341,8 +357,47 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            className="flex items-center gap-1.5 text-[8px] text-[hsl(var(--gb-dark))]/50 uppercase tracking-widest"
+            data-testid="button-reset"
+          >
+            <Power size={10} /> RESET SYSTEM
+          </button>
+        </div>
+
         {secretFlash && (
           <div className="fixed inset-0 z-[9998] bg-[hsl(var(--gb-lightest))] pointer-events-none secret-flash-overlay" />
+        )}
+
+        {showResetConfirm && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" data-testid="modal-reset-confirm">
+            <div className="bg-[hsl(var(--gb-lightest))] border-4 border-[hsl(var(--gb-darkest))] p-6 max-w-xs w-full mx-4 text-center">
+              <p className="text-[10px] text-[hsl(var(--gb-darkest))] font-bold uppercase tracking-wider mb-2">
+                SYSTEM RESET
+              </p>
+              <p className="text-[8px] text-[hsl(var(--gb-dark))] mb-6 leading-relaxed">
+                ALL LOCAL DATA WILL BE ERASED. THIS CANNOT BE UNDONE.
+              </p>
+              <div className="flex gap-3">
+                <RetroButton
+                  onClick={() => setShowResetConfirm(false)}
+                  fullWidth
+                  data-testid="button-reset-cancel"
+                >
+                  CANCEL
+                </RetroButton>
+                <RetroButton
+                  onClick={handleReset}
+                  fullWidth
+                  data-testid="button-reset-confirm"
+                >
+                  CONFIRM
+                </RetroButton>
+              </div>
+            </div>
+          </div>
         )}
       </main>
 
