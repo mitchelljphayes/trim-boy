@@ -16,6 +16,7 @@ export interface RoutineConfig {
   skipLog?: boolean;
   redirectTo?: string;
   spriteUrl?: string;
+  exerciseSprites?: Record<string, string>;
 }
 
 interface Step {
@@ -49,7 +50,7 @@ function buildSteps(config: RoutineConfig): Step[] {
 }
 
 export default function TimerPage(config: RoutineConfig) {
-  const { title, category, skipLog, redirectTo, exercises, workDuration, restDuration, rounds, cooldown, spriteUrl } = config;
+  const { title, category, skipLog, redirectTo, exercises, workDuration, restDuration, rounds, cooldown, spriteUrl, exerciseSprites } = config;
   const steps = buildSteps(config);
 
   const [, setLocation] = useLocation();
@@ -325,6 +326,14 @@ export default function TimerPage(config: RoutineConfig) {
 
       {/* Timer + Current Exercise */}
       <div className="flex-shrink-0 flex flex-col items-center pb-3 px-4">
+        {exerciseSprites && !isRest && !isIntro && exerciseSprites[currentStep.label] && (
+          <img
+            src={exerciseSprites[currentStep.label]}
+            alt={currentStep.label}
+            className="w-20 h-20 object-contain mb-2 pixelated"
+            data-testid="img-exercise-sprite"
+          />
+        )}
         <h2 className={`text-xs font-bold mb-3 uppercase text-center ${textClass}`} data-testid="text-exercise">
           {currentStep.label}
         </h2>
