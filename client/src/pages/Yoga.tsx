@@ -4,6 +4,29 @@ import { useAudio } from '@/hooks/use-audio';
 import { RetroButton } from '@/components/RetroButton';
 import { ArrowLeft, Pause, Play, VolumeX, Volume2, X } from 'lucide-react';
 import ashtangaSprite from '@assets/trimboy_sashtanga_1770441896395.png';
+import spriteSunSalutation from '@/assets/sprites/yoga-sun-salutation.png';
+import spriteBigToe from '@/assets/sprites/yoga-big-toe.png';
+import spriteTriangle from '@/assets/sprites/yoga-triangle.png';
+import spriteSideAngle from '@/assets/sprites/yoga-side-angle.png';
+import spriteWideFold from '@/assets/sprites/yoga-wide-fold.png';
+import spritePyramid from '@/assets/sprites/yoga-pyramid.png';
+import spriteChair from '@/assets/sprites/yoga-chair.png';
+import spriteWarrior from '@/assets/sprites/yoga-warrior.png';
+import spriteSeatedFold from '@/assets/sprites/yoga-seated-fold.png';
+import spriteSavasana from '@/assets/sprites/yoga-savasana.png';
+
+const POSE_SPRITES: Record<string, string> = {
+  'Surya Namaskara': spriteSunSalutation,
+  'Padangusthasana': spriteBigToe,
+  'Trikonasana': spriteTriangle,
+  'Parsvakonasana': spriteSideAngle,
+  'Prasarita Padottanasana': spriteWideFold,
+  'Parsvottanasana': spritePyramid,
+  'Utkatasana': spriteChair,
+  'Virabhadrasana': spriteWarrior,
+  'Paschimottanasana': spriteSeatedFold,
+  'Savasana': spriteSavasana,
+};
 
 interface YogaStep {
   label: string;
@@ -284,9 +307,16 @@ export default function Yoga() {
           <p className="text-[9px] uppercase tracking-widest mb-4 text-[hsl(var(--gb-dark))]" data-testid="text-phase">
             HEAVENLY SAVASANA
           </p>
-          <h2 className="text-sm font-bold mb-6 text-[hsl(var(--gb-darkest))]" data-testid="text-exercise">
+          <h2 className="text-sm font-bold mb-2 text-[hsl(var(--gb-darkest))]" data-testid="text-exercise">
             {currentStep.label}
           </h2>
+
+          <img
+            src={spriteSavasana}
+            alt="Savasana"
+            className="w-24 h-24 object-contain pixelated mb-4"
+            data-testid="img-yoga-pose-sprite"
+          />
 
           <div
             className="text-5xl font-bold mb-8 text-[hsl(var(--gb-darkest))]"
@@ -348,11 +378,20 @@ export default function Yoga() {
           {currentStep.sanskritName}
         </h2>
         {currentStep.englishName && (
-          <p className="text-[7px] mb-3 text-center text-[hsl(var(--gb-dark))] opacity-60">
+          <p className="text-[7px] mb-1 text-center text-[hsl(var(--gb-dark))] opacity-60">
             {currentStep.englishName}
           </p>
         )}
-        {!currentStep.englishName && <div className="mb-3" />}
+        {!currentStep.englishName && <div className="mb-1" />}
+
+        {POSE_SPRITES[currentStep.sanskritName] && (
+          <img
+            src={POSE_SPRITES[currentStep.sanskritName]}
+            alt={currentStep.sanskritName}
+            className="w-20 h-20 object-contain pixelated mb-2"
+            data-testid="img-yoga-pose-sprite"
+          />
+        )}
 
         <div
           className="text-5xl font-bold mb-3 text-[hsl(var(--gb-darkest))]"
