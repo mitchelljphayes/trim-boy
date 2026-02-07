@@ -1,12 +1,20 @@
 import { useLocation } from 'wouter';
 import { RetroButton } from '@/components/RetroButton';
 import { ArrowLeft } from 'lucide-react';
+import runSprite from '@assets/trimboy_run_1770440911026.png';
 
 export default function RunningMenu() {
   const [, setLocation] = useLocation();
 
   return (
     <div className="min-h-screen bg-[hsl(var(--gb-lightest))] p-6 flex flex-col items-center justify-center">
+      <img
+        src={runSprite}
+        alt="TrimBoy Running"
+        className="w-24 h-24 object-contain mb-4 pixelated"
+        style={{ imageRendering: 'pixelated' }}
+        data-testid="img-run-sprite"
+      />
       <h1 className="text-xl font-bold text-[hsl(var(--gb-darkest))] mb-2" data-testid="text-title">
         RUNNING
       </h1>
