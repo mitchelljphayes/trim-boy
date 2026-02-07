@@ -5,6 +5,31 @@ import { useAudio } from '@/hooks/use-audio';
 import { RetroButton } from '@/components/RetroButton';
 import { ArrowLeft, Pause, Play, VolumeX, Volume2, X } from 'lucide-react';
 
+function SpriteAnimator({ frames, alt, interval }: { frames: string[]; alt: string; interval: number }) {
+  const [frameIndex, setFrameIndex] = useState(0);
+
+  useEffect(() => {
+    if (frames.length <= 1) return;
+    const timer = setInterval(() => {
+      setFrameIndex((prev) => (prev + 1) % frames.length);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [frames, interval]);
+
+  useEffect(() => {
+    setFrameIndex(0);
+  }, [frames]);
+
+  return (
+    <img
+      src={frames[frameIndex]}
+      alt={alt}
+      className="w-20 h-20 object-contain mb-2 pixelated"
+      data-testid="img-exercise-sprite"
+    />
+  );
+}
+
 export interface RoutineConfig {
   title: string;
   exercises: string[];
@@ -16,7 +41,7 @@ export interface RoutineConfig {
   skipLog?: boolean;
   redirectTo?: string;
   spriteUrl?: string;
-  exerciseSprites?: Record<string, string>;
+  exerciseSprites?: Record<string, string[]>;
 }
 
 interface Step {
@@ -327,11 +352,10 @@ export default function TimerPage(config: RoutineConfig) {
       {/* Timer + Current Exercise */}
       <div className="flex-shrink-0 flex flex-col items-center pb-3 px-4">
         {exerciseSprites && !isRest && !isIntro && exerciseSprites[currentStep.label] && (
-          <img
-            src={exerciseSprites[currentStep.label]}
+          <SpriteAnimator
+            frames={exerciseSprites[currentStep.label]}
             alt={currentStep.label}
-            className="w-20 h-20 object-contain mb-2 pixelated"
-            data-testid="img-exercise-sprite"
+            interval={1200}
           />
         )}
         <h2 className={`text-xs font-bold mb-3 uppercase text-center ${textClass}`} data-testid="text-exercise">
