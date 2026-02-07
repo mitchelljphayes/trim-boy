@@ -1,4 +1,5 @@
 import TimerPage from '@/components/TimerPage';
+import strengthASprite from '@assets/trimboy_strength_a_1770440916786.png';
 
 export default function StrengthA() {
   return (
@@ -10,6 +11,7 @@ export default function StrengthA() {
       rounds={3}
       cooldown={{ label: 'Savasana', duration: 180 }}
       category="strength"
+      spriteUrl={strengthASprite}
     />
   );
 }
