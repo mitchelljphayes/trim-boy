@@ -22,6 +22,7 @@ import Breathwork from "@/pages/Breathwork";
 import Recharge from "@/pages/Recharge";
 import Yoga from "@/pages/Yoga";
 import Archive from "@/pages/Archive";
+import Backend from "@/pages/Backend";
 import { LCDOverlay } from "@/components/LCDOverlay";
 import { StormBackground } from "@/components/StormBackground";
 import { getStreak, isGbcUnlocked } from "@/lib/streakManager";
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/recharge" component={Recharge} />
       <Route path="/yoga" component={Yoga} />
       <Route path="/archive" component={Archive} />
+      <Route path="/backend" component={Backend} />
       <Route component={NotFound} />
     </Switch>
   );
