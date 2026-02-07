@@ -136,13 +136,22 @@ function isStormTheme(): boolean {
   return root?.classList.contains('theme-storm') ?? false;
 }
 
-function SurfDetail({ meta }: { meta: Record<string, unknown> }) {
+function SurfDetail({ meta, expanded, onToggle }: { meta: Record<string, unknown>; expanded: boolean; onToggle: () => void }) {
   const loc = meta.location ? String(meta.location).toUpperCase() : null;
   const time = meta.timeSurf ? String(meta.timeSurf) : null;
   const rating = typeof meta.enjoyment === 'number' ? meta.enjoyment : 0;
   const marine = meta.marine as Record<string, unknown> | undefined;
   const storm = isStormTheme();
   const marineStyle = storm ? { color: '#00f2ff', textShadow: '0 0 4px rgba(0,242,255,0.5)' } : {};
+
+  const swellVal = marine?.swell ? String(marine.swell) : '';
+  const windVal = marine?.wind ? String(marine.wind) : '';
+  const tideVal = marine?.tide ? String(marine.tide) : '';
+  const swellHeight = marine?.swellHeight != null ? String(marine.swellHeight) : '';
+  const windSpeed = marine?.windSpeed != null ? String(marine.windSpeed) : '';
+  const windDirection = marine?.windDirection != null ? String(marine.windDirection) : '';
+  const tideStage = marine?.tideStage ? String(marine.tideStage) : '';
+  const hasMarineData = marine && ((swellVal && swellVal !== 'N/A') || (windVal && windVal !== 'N/A') || (tideVal && tideVal !== 'N/A'));
 
   return (
     <div className="text-[8px] text-[hsl(var(--gb-dark))] mt-[2px] space-y-[2px]">
@@ -152,40 +161,58 @@ function SurfDetail({ meta }: { meta: Record<string, unknown> }) {
         {rating > 0 && (
           <span className="flex items-center gap-1">RATING: <StarRating rating={rating} /></span>
         )}
-      </div>
-      {marine && (() => {
-        const swellVal = marine.swell ? String(marine.swell) : '';
-        const windVal = marine.wind ? String(marine.wind) : '';
-        const tideVal = marine.tide ? String(marine.tide) : '';
-        const hasData = (swellVal && swellVal !== 'N/A') || (windVal && windVal !== 'N/A') || (tideVal && tideVal !== 'N/A');
-        if (!hasData) return null;
-        return (
-          <div
-            className="flex flex-wrap gap-x-3 gap-y-[2px] items-center"
-            style={marineStyle}
-            data-testid="surf-marine-data"
+        {hasMarineData && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggle(); }}
+            className="flex items-center gap-[3px] underline uppercase tracking-wider"
+            style={storm ? { color: '#00f2ff' } : {}}
+            data-testid="button-toggle-marine"
           >
-            {swellVal && swellVal !== 'N/A' && (
-              <span className="flex items-center gap-[3px]">
-                <WaveIcon size={10} />
-                {swellVal}
-              </span>
-            )}
-            {windVal && windVal !== 'N/A' && (
-              <span className="flex items-center gap-[3px]">
-                <WindIcon size={10} />
-                {windVal}
-              </span>
-            )}
-            {tideVal && tideVal !== 'N/A' && (
-              <span className="flex items-center gap-[3px]">
-                <TideIcon size={10} />
-                {tideVal}
-              </span>
-            )}
+            <WaveIcon size={8} />
+            {expanded ? 'HIDE DATA' : 'CONDITIONS'}
+            <span className="text-[7px]">{expanded ? '▲' : '▼'}</span>
+          </button>
+        )}
+      </div>
+      {expanded && hasMarineData && (
+        <div
+          className="mt-1 border-2 border-[hsl(var(--gb-dark))]/30 p-2 space-y-[3px]"
+          style={storm ? { borderColor: 'rgba(0,242,255,0.3)', background: 'rgba(0,242,255,0.05)' } : { background: 'hsla(var(--gb-dark), 0.05)' }}
+          data-testid="surf-marine-data"
+        >
+          <div className="text-[7px] font-bold uppercase tracking-widest mb-1" style={marineStyle}>
+            MARINE CONDITIONS
           </div>
-        );
-      })()}
+          {swellVal && swellVal !== 'N/A' && (
+            <div className="flex items-center gap-[4px]" style={marineStyle}>
+              <WaveIcon size={10} />
+              <span className="font-bold">SWELL:</span>
+              <span>{swellVal}</span>
+              {swellHeight && <span className="text-[7px] opacity-70">({swellHeight}m)</span>}
+            </div>
+          )}
+          {windVal && windVal !== 'N/A' && (
+            <div className="flex items-center gap-[4px]" style={marineStyle}>
+              <WindIcon size={10} />
+              <span className="font-bold">WIND:</span>
+              <span>{windVal}</span>
+              {(windSpeed || windDirection) && (
+                <span className="text-[7px] opacity-70">
+                  ({[windSpeed && `${windSpeed}km/h`, windDirection && `${windDirection}°`].filter(Boolean).join(', ')})
+                </span>
+              )}
+            </div>
+          )}
+          {tideVal && tideVal !== 'N/A' && (
+            <div className="flex items-center gap-[4px]" style={marineStyle}>
+              <TideIcon size={10} />
+              <span className="font-bold">TIDE:</span>
+              <span>{tideVal}</span>
+              {tideStage && <span className="text-[7px] opacity-70">({tideStage})</span>}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -352,6 +379,7 @@ export default function Archive() {
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<number | null>(null);
   const [filter, setFilter] = useState<CategoryFilter>('all');
+  const [expandedSurfIds, setExpandedSurfIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const storedId = localStorage.getItem("trim_user_id");
@@ -491,7 +519,18 @@ export default function Archive() {
                         </span>
                         {week.isGoldWeek && <FalconIcon size={10} />}
                       </div>
-                      {log.category === 'surf' && meta && <SurfDetail meta={meta} />}
+                      {log.category === 'surf' && meta && (
+                        <SurfDetail
+                          meta={meta}
+                          expanded={expandedSurfIds.has(log.id)}
+                          onToggle={() => setExpandedSurfIds(prev => {
+                            const next = new Set(prev);
+                            if (next.has(log.id)) next.delete(log.id);
+                            else next.add(log.id);
+                            return next;
+                          })}
+                        />
+                      )}
                       {log.category === 'run' && meta && <RunDetail meta={meta} />}
                     </div>
                   </div>
