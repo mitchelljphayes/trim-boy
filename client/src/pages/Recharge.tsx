@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { startOfWeek, format } from 'date-fns';
 import { ArrowLeft, X } from 'lucide-react';
 import { RetroButton } from '@/components/RetroButton';
+import rechargeSprite from '@assets/trimboyrest_1770442003899.png';
 
 const ANIME = [
   { title: 'Cowboy Bebop', desc: 'Space bounty hunters and jazz. The ultimate cool-down.' },
@@ -246,6 +247,13 @@ export default function Recharge() {
   // === CULTURE LIBRARY ===
   return (
     <div className="min-h-screen bg-[hsl(var(--gb-lightest))] p-6 flex flex-col items-center">
+      <img
+        src={rechargeSprite}
+        alt="TrimBoy Resting"
+        className="w-28 h-28 object-contain mb-4"
+        style={{ imageRendering: 'pixelated' }}
+        data-testid="img-recharge-sprite"
+      />
       <h1 className="text-lg font-bold text-[hsl(var(--gb-darkest))] mb-2 text-center" data-testid="text-title">
         RECHARGE LIBRARY
       </h1>
