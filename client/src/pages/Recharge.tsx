@@ -217,7 +217,7 @@ export default function Recharge() {
         <img
           src={burnoutSprite}
           alt="TrimBoy Burnout"
-          className="w-24 h-24 object-contain mb-4 pixelated"
+          className="w-32 h-32 object-contain mb-4 pixelated"
           data-testid="img-burnout-sprite"
         />
 
@@ -250,7 +250,7 @@ export default function Recharge() {
       <img
         src={rechargeSprite}
         alt="TrimBoy Resting"
-        className="w-24 h-24 object-contain mb-4 pixelated"
+        className="w-32 h-32 object-contain mb-4 pixelated"
         data-testid="img-recharge-sprite"
       />
       <h1 className="text-lg font-bold text-[hsl(var(--gb-darkest))] mb-2 text-center" data-testid="text-title">

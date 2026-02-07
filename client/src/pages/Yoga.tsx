@@ -154,7 +154,7 @@ export default function Yoga() {
         <img
           src={ashtangaSprite}
           alt="TrimBoy Ashtanga"
-          className="w-24 h-24 object-contain mb-4 pixelated"
+          className="w-32 h-32 object-contain mb-4 pixelated"
           data-testid="img-ashtanga-sprite"
         />
         <h1 className="text-xl font-bold mb-2 text-[hsl(var(--gb-darkest))]" data-testid="text-title">

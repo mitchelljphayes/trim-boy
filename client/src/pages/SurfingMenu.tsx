@@ -11,7 +11,7 @@ export default function SurfingMenu() {
       <img
         src={surfSprite}
         alt="TrimBoy Surfing"
-        className="w-24 h-24 object-contain mb-4 pixelated"
+        className="w-32 h-32 object-contain mb-4 pixelated"
         data-testid="img-surf-sprite"
       />
       <h1 className="text-xl font-bold text-[hsl(var(--gb-darkest))] mb-2" data-testid="text-title">
