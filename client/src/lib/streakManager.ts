@@ -132,7 +132,7 @@ export function getEvolutionTier(): EvolutionTier {
     return 'GOLD_UNLOCK';
   }
 
-  if (streak === 2 && !isGbcAnnounced()) {
+  if (streak >= 1 && !isGbcAnnounced()) {
     return 'GBC_UNLOCK';
   }
 
