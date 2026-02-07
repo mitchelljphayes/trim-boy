@@ -58,7 +58,7 @@ function StarlingField() {
             top: `${s.y}%`,
             width: `${s.size}px`,
             height: `${s.size}px`,
-            opacity: 0.18,
+            opacity: 0.45,
             animationDuration: `${s.duration}s`,
             animationDelay: `${s.delay}s`,
             ['--drift-x' as string]: `${s.driftX}px`,
