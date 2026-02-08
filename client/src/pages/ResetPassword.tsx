@@ -50,20 +50,25 @@ export default function ResetPassword() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.updateUser({
-      password: password,
-    });
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: password,
+      });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+      } else {
+        setSuccess(true);
+        setLoading(false);
+        // Redirect to dashboard after 2 seconds
+        setTimeout(() => {
+          setLocation('/dashboard');
+        }, 2000);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update password');
       setLoading(false);
-    } else {
-      setSuccess(true);
-      setLoading(false);
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        setLocation('/dashboard');
-      }, 2000);
     }
   };
 
