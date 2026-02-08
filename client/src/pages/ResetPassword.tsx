@@ -13,9 +13,21 @@ export default function ResetPassword() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    // Check if we have a valid recovery session
-    // Supabase automatically handles the token from the URL hash
-    const checkSession = async () => {
+    // Handle the password recovery flow
+    // The reset link contains tokens in the URL hash that Supabase needs to process
+    const handleRecovery = async () => {
+      // First, check if there are tokens in the URL (from the reset email link)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
+      
+      if (accessToken && type === 'recovery') {
+        // Let Supabase process the URL hash - it will establish the session
+        // Small delay to ensure Supabase has processed the hash
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Now check for a valid session
       const { data: { session } } = await supabase.auth.getSession();
       setValidSession(!!session);
     };
@@ -24,12 +36,12 @@ export default function ResetPassword() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         setValidSession(true);
-      } else if (session) {
+      } else if (event === 'SIGNED_IN' && session) {
         setValidSession(true);
       }
     });
 
-    checkSession();
+    handleRecovery();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -51,9 +63,16 @@ export default function ResetPassword() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<{ error: Error }>((_, reject) => 
+        setTimeout(() => reject(new Error('Request timed out. Please try again.')), 15000)
+      );
+      
+      const updatePromise = supabase.auth.updateUser({
         password: password,
       });
+
+      const { error } = await Promise.race([updatePromise, timeoutPromise]);
 
       if (error) {
         setError(error.message);
