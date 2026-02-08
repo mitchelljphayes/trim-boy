@@ -22,6 +22,7 @@ export default function Login() {
       setError(error.message);
       setLoading(false);
     } else {
+      setLoading(false);
       setLocation('/boot');
     }
   };
@@ -86,6 +87,14 @@ export default function Login() {
                 className="w-full p-4 bg-[hsl(var(--gb-lightest))] border-4 border-[hsl(var(--gb-dark))] text-[hsl(var(--gb-darkest))] font-bold outline-none focus:bg-[hsl(var(--gb-light))] placeholder-[hsl(var(--gb-dark))]/50"
                 required
               />
+              <div className="text-right">
+                <Link 
+                  href="/forgot-password" 
+                  className="text-[10px] text-[hsl(var(--gb-dark))] hover:text-[hsl(var(--gb-darkest))] underline hover:no-underline uppercase"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
             </div>
 
             <RetroButton 

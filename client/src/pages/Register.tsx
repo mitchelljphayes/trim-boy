@@ -42,6 +42,7 @@ export default function Register() {
       setLoading(false);
     } else {
       // Auto-login after signup (if email confirmation is disabled)
+      setLoading(false);
       setLocation('/boot');
     }
   };
