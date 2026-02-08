@@ -1,0 +1,27 @@
+{
+  "sessionId": "2026-02-08_15-18-55_pwa-auth-security",
+  "created": "2026-02-08T15:18:55Z",
+  "task": "Migrate TRIM to Supabase + Vercel with PWA support",
+  "status": "planning_complete",
+  "currentPhase": 1,
+  "phases": {
+    "1": { "name": "Supabase Setup", "status": "pending" },
+    "2": { "name": "Auth Integration", "status": "pending" },
+    "3": { "name": "API Migration", "status": "pending" },
+    "4": { "name": "PWA Implementation", "status": "pending" },
+    "5": { "name": "Vercel Deployment", "status": "pending" },
+    "6": { "name": "Cleanup & Polish", "status": "pending" }
+  },
+  "decisions": [
+    "Supabase for database + auth (free tier)",
+    "Vercel for static hosting (free tier)",
+    "Remove Express server entirely",
+    "Fresh start for users (no data migration)",
+    "vite-plugin-pwa for PWA support"
+  ],
+  "artifacts": [
+    "PLAN.md",
+    "CHANGELOG.md",
+    ".env.example"
+  ]
+}

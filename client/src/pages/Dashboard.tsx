@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
-import { FolderArchive, Star, BatteryCharging, Music, VolumeX, Power } from "lucide-react";
+import { FolderArchive, Star, BatteryCharging, Music, VolumeX, LogOut } from "lucide-react";
 import { HardwareToggle } from "@/components/HardwareToggle";
 import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
+import { useAuth } from "@/contexts/AuthContext";
 import { PowerCells } from "@/components/PowerCells";
 import { HabitGrid } from "@/components/HabitGrid";
 import { RetroButton } from "@/components/RetroButton";
@@ -14,8 +15,7 @@ import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const [userId, setUserId] = useState<number | null>(null);
-  const [userName, setUserName] = useState<string>("");
+  const { user, profile, signOut } = useAuth();
   const [yogaStar, setYogaStar] = useState(hasYogaToday);
   const [streak, setStreak] = useState(getStreak);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -26,18 +26,9 @@ export default function Dashboard() {
   const evaStopRef = useRef<(() => void) | null>(null);
   const lastCheckedStats = useRef<string>("");
 
-  useEffect(() => {
-    const storedId = localStorage.getItem("trim_user_id");
-    const storedName = localStorage.getItem("trim_user_name");
-
-    if (!storedId || !storedName) {
-      setLocation("/");
-      return;
-    }
-
-    setUserId(parseInt(storedId));
-    setUserName(storedName);
-  }, [setLocation]);
+  // Get user info from auth context
+  const userId = user?.id ?? null;
+  const userName = profile?.name ?? user?.email?.split('@')[0]?.toUpperCase() ?? 'AGENT';
 
   useEffect(() => {
     const handler = () => setYogaStar(hasYogaToday());
@@ -113,9 +104,9 @@ export default function Dashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const handleReset = useCallback(() => {
+  const handleLogout = useCallback(async () => {
     if (secretStopRef.current) {
       secretStopRef.current();
       secretStopRef.current = null;
@@ -124,10 +115,9 @@ export default function Dashboard() {
       evaStopRef.current();
       evaStopRef.current = null;
     }
-    const keys = Object.keys(localStorage).filter(k => k.startsWith('trim_'));
-    keys.forEach(k => localStorage.removeItem(k));
-    setLocation('/');
-  }, [setLocation]);
+    await signOut();
+    setLocation('/login');
+  }, [setLocation, signOut]);
 
   useEffect(() => {
     return () => {
@@ -351,11 +341,11 @@ export default function Dashboard() {
         </div>
         <div className="flex justify-center pt-4">
           <button
-            onClick={() => setShowResetConfirm(true)}
+            onClick={() => setShowLogoutConfirm(true)}
             className="flex items-center gap-1.5 text-[8px] text-[hsl(var(--gb-dark))]/50 uppercase tracking-widest"
-            data-testid="button-reset"
+            data-testid="button-logout"
           >
-            <Power size={10} /> RESET SYSTEM
+            <LogOut size={10} /> LOGOUT
           </button>
         </div>
 
@@ -363,27 +353,27 @@ export default function Dashboard() {
           <div className="fixed inset-0 z-[9998] bg-[hsl(var(--gb-lightest))] pointer-events-none secret-flash-overlay" />
         )}
 
-        {showResetConfirm && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" data-testid="modal-reset-confirm">
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" data-testid="modal-logout-confirm">
             <div className="bg-[hsl(var(--gb-lightest))] border-4 border-[hsl(var(--gb-darkest))] pt-6 px-6 pb-8 max-w-xs w-full mx-4 text-center overflow-hidden">
               <p className="text-[10px] text-[hsl(var(--gb-darkest))] font-bold uppercase tracking-wider mb-2">
-                SYSTEM RESET
+                LOGOUT
               </p>
               <p className="text-[8px] text-[hsl(var(--gb-dark))] mb-5 leading-relaxed">
-                ALL LOCAL DATA WILL BE ERASED. THIS CANNOT BE UNDONE.
+                END CURRENT SESSION?
               </p>
               <div className="flex gap-3 mx-1 mb-1">
                 <RetroButton
-                  onClick={() => setShowResetConfirm(false)}
+                  onClick={() => setShowLogoutConfirm(false)}
                   fullWidth
-                  data-testid="button-reset-cancel"
+                  data-testid="button-logout-cancel"
                 >
                   CANCEL
                 </RetroButton>
                 <RetroButton
-                  onClick={handleReset}
+                  onClick={handleLogout}
                   fullWidth
-                  data-testid="button-reset-confirm"
+                  data-testid="button-logout-confirm"
                 >
                   CONFIRM
                 </RetroButton>

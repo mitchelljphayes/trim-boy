@@ -47,6 +47,9 @@ export async function registerRoutes(
 
   app.get(api.logs.getWeekly.path, async (req, res) => {
     const userIdStr = req.params.userId;
+    if (Array.isArray(userIdStr)) {
+      return res.status(400).json({ message: "Invalid User ID" });
+    }
     const userId = parseInt(userIdStr);
     if (isNaN(userId)) {
       return res.status(400).json({ message: "Invalid User ID" });
@@ -100,6 +103,9 @@ export async function registerRoutes(
 
   app.get(api.logs.getAll.path, async (req, res) => {
     const userIdStr = req.params.userId;
+    if (Array.isArray(userIdStr)) {
+      return res.status(400).json({ message: "Invalid User ID" });
+    }
     const userId = parseInt(userIdStr);
     if (isNaN(userId)) {
       return res.status(400).json({ message: "Invalid User ID" });

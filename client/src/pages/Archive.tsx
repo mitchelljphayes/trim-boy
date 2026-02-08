@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft, Star } from "lucide-react";
 import { useAllLogs } from "@/hooks/use-trim";
+import { useAuth } from "@/contexts/AuthContext";
 import { format, parseISO, startOfWeek } from "date-fns";
 import { getMilestones, getTotalMastery, hasEverReachedGold, getGoldWeekIds } from "@/lib/streakManager";
 import type { Milestone } from "@/lib/streakManager";
+import type { Log } from "@/types/supabase";
 import goldTrimBoy from "@assets/trimboy_gold_1770407871261.png";
 
 const CATEGORIES = ['all', 'strength', 'run', 'surf', 'maint', 'breath'] as const;
@@ -35,13 +37,8 @@ const CATEGORY_FULL: Record<string, string> = {
   breath: "BREATH",
 };
 
-interface LogEntry {
-  id: number;
-  category: string;
-  date: string;
-  metadata?: unknown;
-  createdAt: string | null;
-}
+// Use Log type from supabase, but keep local alias for clarity
+type LogEntry = Log;
 
 interface WeekGroup {
   weekLabel: string;
@@ -377,19 +374,11 @@ function HallOfFame({ milestones, totalMastery }: { milestones: Milestone[]; tot
 
 export default function Archive() {
   const [, setLocation] = useLocation();
-  const [userId, setUserId] = useState<number | null>(null);
+  const { user } = useAuth();
   const [filter, setFilter] = useState<CategoryFilter>('all');
   const [expandedSurfIds, setExpandedSurfIds] = useState<Set<number>>(new Set());
 
-  useEffect(() => {
-    const storedId = localStorage.getItem("trim_user_id");
-    if (!storedId) {
-      setLocation("/");
-      return;
-    }
-    setUserId(parseInt(storedId));
-  }, [setLocation]);
-
+  const userId = user?.id ?? null;
   const { data: logs, isLoading } = useAllLogs(userId);
 
   const milestones = getMilestones();

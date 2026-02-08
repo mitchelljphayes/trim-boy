@@ -3,9 +3,12 @@ import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
-import Onboarding from "@/pages/Onboarding";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 import BootSequence from "@/pages/BootSequence";
 import StrengthA from "@/pages/StrengthA";
 import StrengthB from "@/pages/StrengthB";
@@ -27,32 +30,122 @@ import { LCDOverlay } from "@/components/LCDOverlay";
 import { StormBackground } from "@/components/StormBackground";
 import { getStreak, isGbcUnlocked } from "@/lib/streakManager";
 
-function Router() {
-  const [userName] = useState(() => localStorage.getItem("trim_user_name"));
+// Root redirect - sends to login or dashboard based on auth state
+function RootRedirect() {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--gb-lightest))]">
+        <div className="text-2xl font-bold text-[hsl(var(--gb-darkest))]">
+          LOADING...
+        </div>
+      </div>
+    );
+  }
+  
+  return <Redirect to={user ? "/dashboard" : "/login"} />;
+}
 
+function Router() {
   return (
     <Switch>
-      <Route path="/">
-        {() => (userName ? <Redirect to="/boot" /> : <Onboarding />)}
+      {/* Public routes */}
+      <Route path="/" component={RootRedirect} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      
+      {/* Protected routes */}
+      <Route path="/boot">
+        <ProtectedRoute>
+          <BootSequence />
+        </ProtectedRoute>
       </Route>
-      <Route path="/boot" component={BootSequence} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/strength-a" component={StrengthA} />
-      <Route path="/strength-b" component={StrengthB} />
-      <Route path="/maintenance" component={Maintenance} />
-      <Route path="/surfing" component={SurfingMenu} />
-      <Route path="/surf/warmup" component={SurfWarmup} />
-      <Route path="/surf/cooldown" component={SurfCooldown} />
-      <Route path="/surf/log" component={SurfLog} />
-      <Route path="/running" component={RunningMenu} />
-      <Route path="/run/warmup" component={RunWarmup} />
-      <Route path="/run/cooldown" component={RunCooldown} />
-      <Route path="/run/log" component={RunLog} />
-      <Route path="/breathwork" component={Breathwork} />
-      <Route path="/recharge" component={Recharge} />
-      <Route path="/yoga" component={Yoga} />
-      <Route path="/archive" component={Archive} />
-      <Route path="/backend" component={Backend} />
+      <Route path="/dashboard">
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/strength-a">
+        <ProtectedRoute>
+          <StrengthA />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/strength-b">
+        <ProtectedRoute>
+          <StrengthB />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/maintenance">
+        <ProtectedRoute>
+          <Maintenance />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/surfing">
+        <ProtectedRoute>
+          <SurfingMenu />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/surf/warmup">
+        <ProtectedRoute>
+          <SurfWarmup />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/surf/cooldown">
+        <ProtectedRoute>
+          <SurfCooldown />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/surf/log">
+        <ProtectedRoute>
+          <SurfLog />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/running">
+        <ProtectedRoute>
+          <RunningMenu />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/run/warmup">
+        <ProtectedRoute>
+          <RunWarmup />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/run/cooldown">
+        <ProtectedRoute>
+          <RunCooldown />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/run/log">
+        <ProtectedRoute>
+          <RunLog />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/breathwork">
+        <ProtectedRoute>
+          <Breathwork />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/recharge">
+        <ProtectedRoute>
+          <Recharge />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/yoga">
+        <ProtectedRoute>
+          <Yoga />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/archive">
+        <ProtectedRoute>
+          <Archive />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/backend">
+        <ProtectedRoute>
+          <Backend />
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -119,24 +212,26 @@ function App() {
           </filter>
         </defs>
       </svg>
-      <QueryClientProvider client={queryClient}>
-        <div className="lcd-ghosting">
-          <Toaster />
-          <Router />
-        </div>
-        <LCDOverlay />
-        {activeTheme === "storm" && <StormBackground />}
-        {activeTheme === "gold" && (
-          <span className="gold-edition-badge" data-testid="text-gold-edition">
-            GOLD EDITION
-          </span>
-        )}
-        {activeTheme === "storm" && (
-          <span className="storm-edition-badge" data-testid="text-storm-edition">
-            LIGHTNING EDITION
-          </span>
-        )}
-      </QueryClientProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <div className="lcd-ghosting">
+            <Toaster />
+            <Router />
+          </div>
+          <LCDOverlay />
+          {activeTheme === "storm" && <StormBackground />}
+          {activeTheme === "gold" && (
+            <span className="gold-edition-badge" data-testid="text-gold-edition">
+              GOLD EDITION
+            </span>
+          )}
+          {activeTheme === "storm" && (
+            <span className="storm-edition-badge" data-testid="text-storm-edition">
+              LIGHTNING EDITION
+            </span>
+          )}
+        </QueryClientProvider>
+      </AuthProvider>
     </div>
   );
 }

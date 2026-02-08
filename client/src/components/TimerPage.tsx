@@ -4,6 +4,7 @@ import { useCreateLog } from '@/hooks/use-trim';
 import { useAudio } from '@/hooks/use-audio';
 import { RetroButton } from '@/components/RetroButton';
 import { ArrowLeft, Pause, Play, VolumeX, Volume2, X } from 'lucide-react';
+import type { LogCategory, RoutineCategory } from '@/types/supabase';
 
 function SpriteAnimator({ frames, alt, interval }: { frames: string[]; alt: string; interval: number }) {
   const [frameIndex, setFrameIndex] = useState(0);
@@ -37,7 +38,7 @@ export interface RoutineConfig {
   restDuration: number;
   rounds: number;
   cooldown?: { label: string; duration: number };
-  category: string;
+  category: RoutineCategory;
   skipLog?: boolean;
   redirectTo?: string;
   spriteUrl?: string;
@@ -144,7 +145,7 @@ export default function TimerPage(config: RoutineConfig) {
       playGentleIdent();
       setComplete(true);
       if (!skipLog) {
-        logActivity({ category, date: new Date() });
+        logActivity({ category: category as LogCategory, date: new Date() });
       }
       setTimeout(() => setLocation(redirectTo || '/dashboard'), 3500);
       return;
