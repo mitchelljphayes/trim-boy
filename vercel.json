@@ -4,6 +4,7 @@
   "outputDirectory": "dist/public",
   "installCommand": "npm install",
   "framework": "vite",
+  "regions": ["syd1"],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
