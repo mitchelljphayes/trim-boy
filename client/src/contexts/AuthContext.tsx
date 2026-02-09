@@ -41,12 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
-        const profileData = await fetchProfile(session.user.id);
-        setProfile(profileData);
+        try {
+          const profileData = await fetchProfile(session.user.id);
+          setProfile(profileData);
+        } catch (err) {
+          console.error('Error fetching profile during init:', err);
+        }
       }
-      
+
+      setLoading(false);
+    }).catch((err) => {
+      console.error('Error getting session:', err);
       setLoading(false);
     });
 
@@ -55,14 +62,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
-          setProfile(profileData);
+          try {
+            const profileData = await fetchProfile(session.user.id);
+            setProfile(profileData);
+          } catch (err) {
+            console.error('Error fetching profile on auth change:', err);
+          }
         } else {
           setProfile(null);
         }
-        
+
         setLoading(false);
       }
     );
@@ -71,30 +82,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: name.toUpperCase().slice(0, 8), // Match original 8-char limit
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name.toUpperCase().slice(0, 8), // Match original 8-char limit
+          },
         },
-      },
-    });
+      });
 
-    return { error: error as Error | null };
+      return { error: error as Error | null };
+    } catch (err) {
+      return { error: err instanceof Error ? err : new Error('Sign up failed') };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    return { error: error as Error | null };
+      return { error: error as Error | null };
+    } catch (err) {
+      return { error: err instanceof Error ? err : new Error('Sign in failed') };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Error signing out:', err);
+    }
+    setUser(null);
+    setProfile(null);
+    setSession(null);
     // Clear any legacy localStorage items
     const keys = Object.keys(localStorage).filter(k => k.startsWith('trim_'));
     keys.forEach(k => localStorage.removeItem(k));
