@@ -16,14 +16,18 @@ export default function Login() {
     setError('');
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    try {
+      const { error } = await signIn(email, password);
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        setError(error.message);
+      } else {
+        setLocation('/boot');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
+    } finally {
       setLoading(false);
-    } else {
-      setLoading(false);
-      setLocation('/boot');
     }
   };
 

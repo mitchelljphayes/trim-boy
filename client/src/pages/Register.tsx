@@ -35,15 +35,19 @@ export default function Register() {
 
     setLoading(true);
 
-    const { error } = await signUp(email, password, name);
+    try {
+      const { error } = await signUp(email, password, name);
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        setError(error.message);
+      } else {
+        // Auto-login after signup (if email confirmation is disabled)
+        setLocation('/boot');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign up failed. Please try again.');
+    } finally {
       setLoading(false);
-    } else {
-      // Auto-login after signup (if email confirmation is disabled)
-      setLoading(false);
-      setLocation('/boot');
     }
   };
 
