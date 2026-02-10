@@ -14,9 +14,11 @@ export default function RunLog() {
   const [paceMin, setPaceMin] = useState('');
   const [paceSec, setPaceSec] = useState('');
   const [enjoyment, setEnjoyment] = useState(0);
+  const [error, setError] = useState('');
 
   const handleSave = () => {
     initAudio();
+    setError('');
 
     logActivity(
       {
@@ -32,6 +34,10 @@ export default function RunLog() {
         onSuccess: () => {
           playCelebratoryIdent();
           setTimeout(() => setLocation('/dashboard'), 1500);
+        },
+        onError: (err) => {
+          console.error('Failed to log run:', err);
+          setError(err instanceof Error ? err.message : 'Failed to save log');
         },
       }
     );
@@ -49,6 +55,12 @@ export default function RunLog() {
       </p>
 
       <div className="w-full max-w-xs space-y-5">
+        {error && (
+          <div className="bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))] p-3 text-[10px] uppercase tracking-wider">
+            ERROR: {error}
+          </div>
+        )}
+
         {/* Distance */}
         <div>
           <label className="block text-[9px] text-[hsl(var(--gb-darkest))] uppercase tracking-widest mb-2">

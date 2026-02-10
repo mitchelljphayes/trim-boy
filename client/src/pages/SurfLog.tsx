@@ -16,6 +16,7 @@ export default function SurfLog() {
   const [enjoyment, setEnjoyment] = useState(0);
   const [isFetchingMarine, setIsFetchingMarine] = useState(false);
   const [marineStatus, setMarineStatus] = useState('');
+  const [error, setError] = useState('');
 
   const saveLog = (marineData?: Record<string, unknown>) => {
     const meta: Record<string, unknown> = {
@@ -37,6 +38,10 @@ export default function SurfLog() {
         onSuccess: () => {
           playCelebratoryIdent();
           setTimeout(() => setLocation('/dashboard'), 1500);
+        },
+        onError: (err) => {
+          console.error('Failed to log surf:', err);
+          setError(err instanceof Error ? err.message : 'Failed to save log');
         },
       }
     );
@@ -84,6 +89,12 @@ export default function SurfLog() {
       </p>
 
       <div className="w-full max-w-xs space-y-5">
+        {error && (
+          <div className="bg-[hsl(var(--gb-darkest))] text-[hsl(var(--gb-lightest))] p-3 text-[10px] uppercase tracking-wider">
+            ERROR: {error}
+          </div>
+        )}
+
         {/* Time */}
         <div>
           <label className="block text-[9px] text-[hsl(var(--gb-darkest))] uppercase tracking-widest mb-2">
