@@ -95,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { error: error as Error | null };
     } catch (err) {
+      console.error('SignUp exception:', err);
       return { error: err instanceof Error ? err : new Error('Sign up failed') };
     }
   };
@@ -105,9 +106,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
       });
-
       return { error: error as Error | null };
     } catch (err) {
+      console.error('SignIn exception:', err);
       return { error: err instanceof Error ? err : new Error('Sign in failed') };
     }
   };
