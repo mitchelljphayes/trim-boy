@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { useAudio } from '@/hooks/use-audio';
+import { useCreateLog } from '@/hooks/use-trim';
 import { RetroButton } from '@/components/RetroButton';
 import { ArrowLeft, Pause, Play, VolumeX, Volume2, X } from 'lucide-react';
 import ashtangaSprite from '@assets/trimboy_sashtanga_1770441896395.png';
@@ -87,6 +88,7 @@ function markYogaComplete() {
 export default function Yoga() {
   const [, setLocation] = useLocation();
   const { playInhaleSweep, playExhaleSweep, playHoldChime, playGentleIdent, initAudio, setMuted } = useAudio();
+  const { mutate: logActivity } = useCreateLog();
 
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -126,6 +128,8 @@ export default function Yoga() {
       playGentleIdent();
       setComplete(true);
       markYogaComplete();
+      // Log yoga activity to database
+      logActivity({ category: 'yoga', date: new Date() });
       setTimeout(() => setLocation('/dashboard'), 3500);
       return;
     }
@@ -140,7 +144,7 @@ export default function Yoga() {
     } else {
       playInhaleSweep();
     }
-  }, [currentStepIndex, playGentleIdent, playInhaleSweep, playExhaleSweep, setLocation]);
+  }, [currentStepIndex, playGentleIdent, playInhaleSweep, playExhaleSweep, setLocation, logActivity]);
 
   useEffect(() => {
     if (!started || paused || complete) return;

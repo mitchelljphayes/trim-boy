@@ -83,15 +83,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      const formattedName = name.toUpperCase().slice(0, 8); // Match original 8-char limit
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            name: name.toUpperCase().slice(0, 8), // Match original 8-char limit
+            name: formattedName,
           },
         },
       });
+
+      // If signup succeeded, create the profile
+      if (!error && data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            name: formattedName,
+          });
+        
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          // Don't fail the signup, profile can be created later
+        }
+      }
 
       return { error: error as Error | null };
     } catch (err) {

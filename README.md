@@ -1,16 +1,18 @@
 # TRIM Boy
 
-A Game Boy-themed fitness tracker PWA for logging daily meals and exercise.
+A Game Boy-themed fitness tracker PWA with the "4-2 Protocol" (4 strength sessions + 2 runs per week).
 
 ![TRIM Boy](client/public/pwa-512x512.png)
 
 ## Features
 
-- Log daily meals (breakfast, lunch, dinner, snacks)
-- Track exercise/training activities
-- View historical logs in the Archive
-- Game Boy aesthetic with retro green palette
-- PWA support for offline use and mobile installation
+- **4-2 Protocol Tracking**: Log 4 strength workouts and 2 runs per week
+- **Activity Logging**: Strength A/B, Running, Surfing, Breathwork, Maintenance, Yoga
+- **Streak System**: Track consecutive weeks of protocol completion
+- **Gamification**: Unlock new themes (Classic → Color → Gold → Storm)
+- **Archive**: View historical activity logs
+- **Game Boy Aesthetic**: Retro green palette with LCD effects
+- **PWA Support**: Installable, works offline
 
 ## Tech Stack
 
@@ -53,7 +55,7 @@ Create a Supabase project at [supabase.com](https://supabase.com), then create t
 -- Profiles table (extends auth.users)
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  username TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -64,23 +66,23 @@ CREATE POLICY "Users can view own profile"
   ON profiles FOR SELECT
   USING (auth.uid() = id);
 
+CREATE POLICY "Users can insert own profile"
+  ON profiles FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id);
 
--- Logs table
+-- Logs table (activity tracking)
+-- Categories: 'strength', 'run', 'surf', 'maint', 'breath', 'yoga'
 CREATE TABLE logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id SERIAL PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  category TEXT NOT NULL,
   date DATE NOT NULL,
-  breakfast TEXT,
-  lunch TEXT,
-  dinner TEXT,
-  snacks TEXT,
-  training TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, date)
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -101,6 +103,10 @@ CREATE POLICY "Users can update own logs"
 CREATE POLICY "Users can delete own logs"
   ON logs FOR DELETE
   USING (auth.uid() = user_id);
+
+-- Index for faster queries
+CREATE INDEX logs_user_date_idx ON logs(user_id, date);
+CREATE INDEX logs_user_category_idx ON logs(user_id, category);
 ```
 
 ### 4. Set environment variables

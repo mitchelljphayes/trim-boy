@@ -10,7 +10,7 @@ export type Json =
   | Json[];
 
 // Categories that get logged to the database
-export type LogCategory = 'strength' | 'run' | 'surf' | 'maint' | 'breath';
+export type LogCategory = 'strength' | 'run' | 'surf' | 'maint' | 'breath' | 'yoga';
 
 // Extended categories for internal use (warmup/cooldown routines that don't get logged)
 export type RoutineCategory = LogCategory | 'run_warmup' | 'run_cooldown' | 'surf_warmup' | 'surf_cooldown';

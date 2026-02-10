@@ -118,13 +118,12 @@ export function setLightningAnnouncedThisSession() {
 export function getEvolutionTier(): EvolutionTier {
   const streak = getStreak();
 
+  // 5+ week streak: Lightning Edition unlock
   if (streak >= 5 && !isLightningAnnouncedThisSession()) {
-    if (!isLightningAnnounced()) {
-      return 'LIGHTNING_UNLOCK';
-    }
     return 'LIGHTNING_UNLOCK';
   }
 
+  // 2+ week streak: Gold Edition unlock (if GBC already announced)
   if (streak >= 2 && !isGoldAnnouncedThisSession()) {
     if (!isGbcAnnounced()) {
       return 'GBC_UNLOCK';
@@ -132,6 +131,7 @@ export function getEvolutionTier(): EvolutionTier {
     return 'GOLD_UNLOCK';
   }
 
+  // 1+ week streak: GBC (Color) unlock
   if (streak >= 1 && !isGbcAnnounced()) {
     return 'GBC_UNLOCK';
   }
