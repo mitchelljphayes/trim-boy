@@ -44,8 +44,6 @@ export default function SurfLog() {
 
   const handleSave = async () => {
     initAudio();
-    const userId = localStorage.getItem('trim_user_id');
-    if (!userId) return;
 
     setIsFetchingMarine(true);
     setMarineStatus('LOCATING...');

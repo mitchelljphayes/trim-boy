@@ -17,8 +17,6 @@ export default function RunLog() {
 
   const handleSave = () => {
     initAudio();
-    const userId = localStorage.getItem('trim_user_id');
-    if (!userId) return;
 
     logActivity(
       {
