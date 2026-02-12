@@ -4,14 +4,24 @@ export function useAudio() {
   const audioCtx = useRef<AudioContext | null>(null);
   const mutedRef = useRef(false);
 
-  const initAudio = useCallback(() => {
-    if (!audioCtx.current) {
-      audioCtx.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const getContext = useCallback((): AudioContext | null => {
+    if (!audioCtx.current || audioCtx.current.state === 'closed') {
+      try {
+        audioCtx.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      } catch {
+        return null;
+      }
     }
+    // Always try to resume if suspended - this is a no-op if already running
     if (audioCtx.current.state === 'suspended') {
-      audioCtx.current.resume();
+      audioCtx.current.resume().catch(() => {});
     }
+    return audioCtx.current;
   }, []);
+
+  const initAudio = useCallback(() => {
+    getContext();
+  }, [getContext]);
 
   const setMuted = useCallback((muted: boolean) => {
     mutedRef.current = muted;
@@ -19,24 +29,28 @@ export function useAudio() {
 
   const playTone = useCallback((freq: number, duration: number, volume = 0.1, type: OscillatorType = 'square') => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
+    const ctx = getContext();
+    if (!ctx) return;
 
-    const osc = audioCtx.current.createOscillator();
-    const gain = audioCtx.current.createGain();
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.current.currentTime);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
 
-    gain.gain.setValueAtTime(volume, audioCtx.current.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.current.currentTime + duration);
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
 
-    osc.connect(gain);
-    gain.connect(audioCtx.current.destination);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
 
-    osc.start();
-    osc.stop(audioCtx.current.currentTime + duration);
-  }, [initAudio]);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch {
+      // Audio failed, ignore silently
+    }
+  }, [getContext]);
 
   const playHighBeep = useCallback(() => playTone(880, 0.12), [playTone]);
 
@@ -50,9 +64,8 @@ export function useAudio() {
 
   const playBootIdent = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const notes = [
@@ -98,9 +111,8 @@ export function useAudio() {
 
   const playPressStart = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const blip = ctx.createOscillator();
@@ -125,10 +137,8 @@ export function useAudio() {
 
   const playGentleIdent = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const osc1 = ctx.createOscillator();
@@ -157,9 +167,8 @@ export function useAudio() {
 
   const playInhaleSweep = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const osc = ctx.createOscillator();
@@ -178,9 +187,8 @@ export function useAudio() {
 
   const playExhaleSweep = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const osc = ctx.createOscillator();
@@ -199,9 +207,8 @@ export function useAudio() {
 
   const playHoldChime = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const osc = ctx.createOscillator();
@@ -218,9 +225,8 @@ export function useAudio() {
 
   const playGoldenChime = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const notes = [
@@ -258,9 +264,8 @@ export function useAudio() {
 
   const playFireworksBurst = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const bursts = [
@@ -303,9 +308,8 @@ export function useAudio() {
 
   const playFlameRoar = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const rumble = ctx.createOscillator();
@@ -338,9 +342,8 @@ export function useAudio() {
 
   const playThunderclap = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const crack = ctx.createOscillator();
@@ -395,9 +398,8 @@ export function useAudio() {
 
   const playStormChime = useCallback(() => {
     if (mutedRef.current) return;
-    initAudio();
-    if (!audioCtx.current) return;
-    const ctx = audioCtx.current;
+    const ctx = getContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const notes = [
