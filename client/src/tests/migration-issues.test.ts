@@ -1,10 +1,10 @@
 /**
  * Migration Issue Tests
  *
- * These tests specifically target issues caused by the Express → Supabase migration.
- * They verify that all pages correctly use Supabase auth instead of legacy localStorage.
+ * These tests verify that the Express → Supabase migration is complete.
+ * All pages should correctly use Supabase auth instead of legacy localStorage.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -15,30 +15,24 @@ function readSourceFile(relativePath: string): string {
 }
 
 describe('Migration Issues: Express → Supabase', () => {
-  // ─── CRITICAL: localStorage user ID no longer set ──────────
-  describe('CRITICAL: trim_user_id localStorage is never set but still read', () => {
-    it('RunLog.tsx reads trim_user_id from localStorage (BROKEN)', () => {
+  // ─── FIXED: localStorage user ID is no longer used ──────────
+  describe('FIXED: trim_user_id localStorage is no longer used', () => {
+    it('RunLog.tsx does NOT read trim_user_id from localStorage', () => {
       const source = readSourceFile('pages/RunLog.tsx');
 
-      // This is the bug: RunLog reads trim_user_id from localStorage
+      // Bug was fixed: RunLog no longer reads from localStorage
       const readsLocalStorage = source.includes("localStorage.getItem('trim_user_id')");
-      expect(readsLocalStorage).toBe(true);
-
-      // But trim_user_id is never set anywhere in the codebase
-      // After Express migration, user ID comes from Supabase auth, not localStorage
-      // This means handleSave() will ALWAYS return early without saving
+      expect(readsLocalStorage).toBe(false);
     });
 
-    it('SurfLog.tsx reads trim_user_id from localStorage (BROKEN)', () => {
+    it('SurfLog.tsx does NOT read trim_user_id from localStorage', () => {
       const source = readSourceFile('pages/SurfLog.tsx');
 
       const readsLocalStorage = source.includes("localStorage.getItem('trim_user_id')");
-      expect(readsLocalStorage).toBe(true);
-
-      // Same issue as RunLog: handleSave() will ALWAYS return early
+      expect(readsLocalStorage).toBe(false);
     });
 
-    it('trim_user_id is NEVER set in the codebase (root cause)', () => {
+    it('trim_user_id is NEVER set in the codebase', () => {
       // Search all TSX files for setting trim_user_id (excluding test files)
       const pagesDir = path.resolve(__dirname, '..');
       const allFiles = getAllTsxFiles(pagesDir).filter(
@@ -55,38 +49,35 @@ describe('Migration Issues: Express → Supabase', () => {
         }
       }
 
-      // This PROVES the bug: no non-test file ever sets trim_user_id
+      // No file ever sets trim_user_id - this is correct behavior
       expect(setsTrimeUserId).toBe(false);
     });
 
-    it('RunLog userId is read but never used in the logActivity call', () => {
+    it('RunLog uses useCreateLog hook which gets user from Supabase auth', () => {
       const source = readSourceFile('pages/RunLog.tsx');
 
-      // The userId variable is read from localStorage
-      expect(source).toContain("const userId = localStorage.getItem('trim_user_id')");
-
-      // But it's never passed to logActivity - the hook gets user from supabase.auth.getUser()
-      // The logActivity call doesn't include userId
-      const logActivityCall = source.match(/logActivity\(\s*\{[\s\S]*?\}\s*,/);
-      expect(logActivityCall).toBeTruthy();
-      expect(logActivityCall![0]).not.toContain('userId');
+      // RunLog imports and uses the hook
+      expect(source).toContain('useCreateLog');
+      expect(source).toContain('logActivity');
+      
+      // Does NOT have localStorage-based user ID check
+      expect(source).not.toContain("localStorage.getItem('trim_user_id')");
     });
 
-    it('SurfLog userId is read but never used in the saveLog call', () => {
+    it('SurfLog uses useCreateLog hook which gets user from Supabase auth', () => {
       const source = readSourceFile('pages/SurfLog.tsx');
 
-      // Same pattern as RunLog
-      expect(source).toContain("const userId = localStorage.getItem('trim_user_id')");
-
-      // saveLog() doesn't use userId either - it's a dead variable
-      const saveLogFn = source.match(/const saveLog = \([\s\S]*?\};/);
-      expect(saveLogFn).toBeTruthy();
-      expect(saveLogFn![0]).not.toContain('userId');
+      // SurfLog imports and uses the hook
+      expect(source).toContain('useCreateLog');
+      expect(source).toContain('logActivity');
+      
+      // Does NOT have localStorage-based user ID check
+      expect(source).not.toContain("localStorage.getItem('trim_user_id')");
     });
   });
 
   // ─── Pages that work correctly with Supabase ──────────────
-  describe('Pages correctly using Supabase auth (NOT broken)', () => {
+  describe('Pages correctly using Supabase auth', () => {
     it('TimerPage.tsx does NOT use localStorage for user ID', () => {
       const source = readSourceFile('components/TimerPage.tsx');
 
@@ -170,9 +161,9 @@ describe('Migration Issues: Express → Supabase', () => {
     });
   });
 
-  // ─── Inconsistent patterns across pages ────────────────────
-  describe('Inconsistent patterns across activity logging pages', () => {
-    it('all logging pages should use the same pattern for auth check', () => {
+  // ─── Consistent patterns across pages ────────────────────
+  describe('Consistent patterns across activity logging pages', () => {
+    it('all logging pages use the same pattern - no localStorage auth check', () => {
       const pages = [
         { name: 'RunLog', file: 'pages/RunLog.tsx' },
         { name: 'SurfLog', file: 'pages/SurfLog.tsx' },
@@ -185,23 +176,17 @@ describe('Migration Issues: Express → Supabase', () => {
         return {
           name: p.name,
           usesLocalStorage: source.includes("localStorage.getItem('trim_user_id')"),
-          usesAuthContext: source.includes('useAuth'),
           directlyCallsLogActivity: source.includes('logActivity('),
         };
       });
 
-      // RunLog and SurfLog are inconsistent with TimerPage and Breathwork
-      // TimerPage and Breathwork don't check localStorage - they just call logActivity
-      // RunLog and SurfLog check localStorage first (and break because it's never set)
-
+      // ALL pages should NOT use localStorage for user ID
       const localStoragePages = results.filter(r => r.usesLocalStorage);
-      const nonLocalStoragePages = results.filter(r => !r.usesLocalStorage);
+      expect(localStoragePages).toEqual([]);
 
-      // These are the broken pages
-      expect(localStoragePages.map(p => p.name)).toEqual(['RunLog', 'SurfLog']);
-
-      // These work correctly
-      expect(nonLocalStoragePages.map(p => p.name)).toEqual(['Breathwork', 'TimerPage']);
+      // ALL pages should call logActivity
+      const logActivityPages = results.filter(r => r.directlyCallsLogActivity);
+      expect(logActivityPages.map(p => p.name)).toEqual(['RunLog', 'SurfLog', 'Breathwork', 'TimerPage']);
     });
   });
 
