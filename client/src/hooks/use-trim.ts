@@ -10,6 +10,9 @@ interface WeeklyStats {
   runCount: number;
   habits: {
     date: string;
+    strength: boolean;
+    run: boolean;
+    yoga: boolean;
     surf: boolean;
     maint: boolean;
     breath: boolean;
@@ -50,19 +53,22 @@ export function useWeeklyStats(userId: string | null) {
       const runCount = typedLogs.filter(l => l.category === 'run').length;
 
       // Build habits map
-      const habitsMap = new Map<string, { surf: boolean, maint: boolean, breath: boolean }>();
+      const habitsMap = new Map<string, { strength: boolean, run: boolean, yoga: boolean, surf: boolean, maint: boolean, breath: boolean }>();
       
       // Initialize all days of week
       let currentDate = new Date(start);
       while (currentDate <= end) {
         const dateStr = format(currentDate, 'yyyy-MM-dd');
-        habitsMap.set(dateStr, { surf: false, maint: false, breath: false });
+        habitsMap.set(dateStr, { strength: false, run: false, yoga: false, surf: false, maint: false, breath: false });
         currentDate.setDate(currentDate.getDate() + 1);
       }
 
       typedLogs.forEach(log => {
         const dayHabits = habitsMap.get(log.date);
         if (dayHabits) {
+          if (log.category === 'strength') dayHabits.strength = true;
+          if (log.category === 'run') dayHabits.run = true;
+          if (log.category === 'yoga') dayHabits.yoga = true;
           if (log.category === 'surf') dayHabits.surf = true;
           if (log.category === 'maint') dayHabits.maint = true;
           if (log.category === 'breath') dayHabits.breath = true;
@@ -123,10 +129,10 @@ export function useCreateLog() {
 
   return useMutation({
     mutationFn: async ({ category, date, metadata }: CreateLogParams) => {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      // Get current session (cached, no network request)
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!user) {
+      if (!session?.user) {
         throw new Error('Not authenticated');
       }
 
@@ -135,7 +141,7 @@ export function useCreateLog() {
       const { data, error } = await supabase
         .from('logs')
         .insert({
-          user_id: user.id,
+          user_id: session.user.id,
           category,
           date: formattedDate,
           metadata: (metadata || null) as Json,

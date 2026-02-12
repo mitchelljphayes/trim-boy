@@ -5,6 +5,9 @@ import { Minus, Plus } from "lucide-react";
 interface HabitGridProps {
   habits: {
     date: string;
+    strength: boolean;
+    run: boolean;
+    yoga: boolean;
     surf: boolean;
     maint: boolean;
     breath: boolean;
@@ -24,8 +27,11 @@ export function HabitGrid({ habits }: HabitGridProps) {
 
   const days = ["M", "T", "W", "T", "F", "S", "S"];
   const categories = [
+    { key: "strength", label: "STRN" },
+    { key: "run", label: "RUN" },
+    { key: "yoga", label: "YOGA" },
     { key: "surf", label: "SURF" },
-    { key: "maint", label: "MAINT" },
+    { key: "maint", label: "MANT" },
     { key: "breath", label: "BRTH" },
   ] as const;
 
