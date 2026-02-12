@@ -11,10 +11,12 @@ export function RetroButton({
   className, 
   variant = "primary", 
   fullWidth = false,
+  type = "button",
   ...props 
 }: RetroButtonProps) {
   return (
     <button
+      type={type}
       className={cn(
         "relative py-3 px-4 font-bold uppercase transition-all active:translate-y-1 active:shadow-none",
         "border-4 border-[hsl(var(--gb-dark))] bg-[hsl(var(--gb-light))] text-[hsl(var(--gb-darkest))]",

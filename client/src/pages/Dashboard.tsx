@@ -107,6 +107,10 @@ export default function Dashboard() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = useCallback(async () => {
+    // Close the modal first
+    setShowLogoutConfirm(false);
+    
+    // Stop any playing audio
     if (secretStopRef.current) {
       secretStopRef.current();
       secretStopRef.current = null;
@@ -115,7 +119,13 @@ export default function Dashboard() {
       evaStopRef.current();
       evaStopRef.current = null;
     }
-    await signOut();
+    
+    // Sign out and redirect
+    try {
+      await signOut();
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
     setLocation('/login');
   }, [setLocation, signOut]);
 
