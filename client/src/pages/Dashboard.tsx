@@ -355,14 +355,14 @@ export default function Dashboard() {
 
         {showLogoutConfirm && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" data-testid="modal-logout-confirm">
-            <div className="bg-[hsl(var(--gb-lightest))] border-4 border-[hsl(var(--gb-darkest))] pt-6 px-6 pb-8 max-w-xs w-full mx-4 text-center overflow-hidden">
+            <div className="bg-[hsl(var(--gb-lightest))] border-4 border-[hsl(var(--gb-darkest))] p-6 max-w-sm w-full mx-4 text-center">
               <p className="text-[10px] text-[hsl(var(--gb-darkest))] font-bold uppercase tracking-wider mb-2">
                 LOGOUT
               </p>
               <p className="text-[8px] text-[hsl(var(--gb-dark))] mb-5 leading-relaxed">
                 END CURRENT SESSION?
               </p>
-              <div className="flex gap-3 mx-1 mb-1">
+              <div className="flex gap-3">
                 <RetroButton
                   onClick={() => setShowLogoutConfirm(false)}
                   fullWidth
