@@ -37,39 +37,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Timeout to prevent infinite loading if Supabase is slow/unreachable
+    const AUTH_TIMEOUT_MS = 5000;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let resolved = false;
+
+    const finishLoading = () => {
+      if (!resolved) {
+        resolved = true;
+        if (timeoutId) clearTimeout(timeoutId);
+        setLoading(false);
+      }
+    };
+
+    // Set a timeout fallback - if auth takes too long, proceed without session
+    timeoutId = setTimeout(() => {
+      if (!resolved) {
+        console.warn('Auth initialization timed out, proceeding without session');
+        finishLoading();
+      }
+    }, AUTH_TIMEOUT_MS);
+
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (resolved) return; // Already timed out
+      
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
         try {
           const profileData = await fetchProfile(session.user.id);
-          setProfile(profileData);
+          if (!resolved) setProfile(profileData);
         } catch (err) {
           console.error('Error fetching profile during init:', err);
         }
       }
 
-      setLoading(false);
+      finishLoading();
     }).catch((err) => {
       console.error('Error getting session:', err);
-      setLoading(false);
+      finishLoading();
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          try {
-            const profileData = await fetchProfile(session.user.id);
-            setProfile(profileData);
-          } catch (err) {
-            console.error('Error fetching profile on auth change:', err);
-          }
+          // Fetch profile in background - don't block auth flow
+          fetchProfile(session.user.id)
+            .then((profileData) => setProfile(profileData))
+            .catch((err) => console.error('Error fetching profile on auth change:', err));
         } else {
           setProfile(null);
         }
@@ -78,7 +99,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
