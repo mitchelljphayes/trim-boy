@@ -17,18 +17,10 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Add timeout to catch hanging requests
-      const timeoutPromise = new Promise<{ error: Error }>((_, reject) => 
-        setTimeout(() => reject(new Error('Request timed out. Check your connection.')), 15000)
-      );
-      
-      const result = await Promise.race([
-        signIn(email, password),
-        timeoutPromise
-      ]);
+      const { error } = await signIn(email, password);
 
-      if (result.error) {
-        setError(result.error.message);
+      if (error) {
+        setError(error.message);
       } else {
         setLocation('/boot');
       }
