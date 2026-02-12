@@ -24,6 +24,9 @@ export default function Dashboard() {
   const secretStopRef = useRef<(() => void) | null>(null);
   const [evaPlaying, setEvaPlaying] = useState(false);
   const evaStopRef = useRef<(() => void) | null>(null);
+  const [musicMuted, setMusicMuted] = useState(() => 
+    localStorage.getItem("trim_music_muted") === "true"
+  );
   const lastCheckedStats = useRef<string>("");
 
   // Get user info from auth context
@@ -83,6 +86,8 @@ export default function Dashboard() {
         evaStopRef.current = null;
       }
       setEvaPlaying(false);
+      setMusicMuted(true);
+      localStorage.setItem("trim_music_muted", "true");
       return;
     }
     if (secretActive && secretStopRef.current) {
@@ -93,10 +98,12 @@ export default function Dashboard() {
     const stop = playEvangelion();
     evaStopRef.current = stop;
     setEvaPlaying(true);
+    setMusicMuted(false);
+    localStorage.setItem("trim_music_muted", "false");
   }, [evaPlaying, secretActive]);
 
   useEffect(() => {
-    if (!evaPlaying && !evaStopRef.current && !secretActive) {
+    if (!evaPlaying && !evaStopRef.current && !secretActive && !musicMuted) {
       const stop = playEvangelion();
       evaStopRef.current = stop;
       setEvaPlaying(true);
