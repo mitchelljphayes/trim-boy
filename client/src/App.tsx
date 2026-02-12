@@ -30,6 +30,7 @@ import Archive from "@/pages/Archive";
 import Backend from "@/pages/Backend";
 import { LCDOverlay } from "@/components/LCDOverlay";
 import { StormBackground } from "@/components/StormBackground";
+import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
 import { getStreak, isGbcUnlocked } from "@/lib/streakManager";
 
 // Root redirect - sends to login or dashboard based on auth state
@@ -234,6 +235,7 @@ function App() {
               LIGHTNING EDITION
             </span>
           )}
+          <PWAUpdatePrompt />
         </QueryClientProvider>
       </AuthProvider>
     </div>
