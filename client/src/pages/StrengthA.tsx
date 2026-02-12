@@ -26,7 +26,7 @@ export default function StrengthA() {
       workDuration={45}
       restDuration={15}
       rounds={3}
-      cooldown={{ label: 'Savasana', duration: 180 }}
+      cooldown={{ label: 'Savasana', duration: 30 }}
       category="strength"
       spriteUrl={strengthASprite}
       exerciseSprites={exerciseSprites}

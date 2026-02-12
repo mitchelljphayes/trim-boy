@@ -52,7 +52,7 @@ const YOGA_SEQUENCE: YogaStep[] = [
   { label: 'UTKATASANA', sanskritName: 'Utkatasana', englishName: 'Chair Pose', duration: 150, section: 'STANDING POSES' },
   { label: 'VIRABHADRASANA', sanskritName: 'Virabhadrasana', englishName: 'Warrior Pose', duration: 150, section: 'STANDING POSES' },
   { label: 'PASCHIMOTTANASANA', sanskritName: 'Paschimottanasana', englishName: 'Seated Forward Fold', duration: 150, section: 'SEATED & FINISHING' },
-  { label: 'SAVASANA', sanskritName: 'Savasana', englishName: 'Corpse Pose (Rest)', duration: 180, section: 'CLOSING' },
+  { label: 'SAVASANA', sanskritName: 'Savasana', englishName: 'Corpse Pose (Rest)', duration: 30, section: 'CLOSING' },
 ];
 
 const EXERCISES_ONLY = YOGA_SEQUENCE.filter(s => s.section !== 'PREP');
