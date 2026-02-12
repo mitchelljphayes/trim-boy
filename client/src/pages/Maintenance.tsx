@@ -24,7 +24,7 @@ export default function Maintenance() {
       workDuration={60}
       restDuration={15}
       rounds={1}
-      cooldown={{ label: 'Savasana', duration: 180 }}
+      cooldown={{ label: 'Savasana', duration: 30 }}
       category="maint"
       spriteUrl={maintSprite}
       exerciseSprites={exerciseSprites}
