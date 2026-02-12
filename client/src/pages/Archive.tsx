@@ -379,7 +379,10 @@ export default function Archive() {
   const [expandedSurfIds, setExpandedSurfIds] = useState<Set<number>>(new Set());
 
   const userId = user?.id ?? null;
-  const { data: logs, isLoading } = useAllLogs(userId);
+  const { data: logs, isLoading, fetchStatus } = useAllLogs(userId);
+  
+  // Only show loading when actually fetching (not when query is disabled)
+  const isActuallyLoading = fetchStatus === 'fetching';
 
   const milestones = getMilestones();
   const totalMastery = getTotalMastery();
@@ -442,7 +445,7 @@ export default function Archive() {
       </div>
 
       <main>
-        {isLoading && (
+        {isActuallyLoading && (
           <div className="text-center py-12">
             <p className="text-xs text-[hsl(var(--gb-dark))] animate-pulse" data-testid="text-loading">
               LOADING DATA...
@@ -450,7 +453,7 @@ export default function Archive() {
           </div>
         )}
 
-        {!isLoading && weekGroups.length === 0 && (
+        {!isActuallyLoading && weekGroups.length === 0 && (
           <div className="text-center py-12 border-4 border-dashed border-[hsl(var(--gb-dark))]/30 p-6">
             <p className="text-xs text-[hsl(var(--gb-dark))]" data-testid="text-empty">
               {filter === 'all' ? 'NO LOGS RECORDED YET' : `NO ${CATEGORY_LABELS[filter]} LOGS FOUND`}
