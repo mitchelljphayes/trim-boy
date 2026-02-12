@@ -39,6 +39,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+        // Force new service worker to activate immediately
+        skipWaiting: true,
+        clientsClaim: true,
         // Don't cache Supabase API calls - especially auth!
         navigateFallbackDenylist: [/^\/api/, /supabase/],
         runtimeCaching: [

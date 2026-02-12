@@ -1,15 +1,17 @@
+import { useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { RetroButton } from './RetroButton';
 
 export function PWAUpdatePrompt() {
+  const [showNotice, setShowNotice] = useState(false);
+  
   const {
-    needRefresh: [needRefresh, setNeedRefresh],
+    needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r: ServiceWorkerRegistration | undefined) {
-      // Check for updates every hour
+      // Check for updates every 30 minutes
       if (r) {
-        setInterval(() => r.update(), 60 * 60 * 1000);
+        setInterval(() => r.update(), 30 * 60 * 1000);
       }
     },
     onRegisterError(error: Error) {
@@ -17,35 +19,29 @@ export function PWAUpdatePrompt() {
     },
   });
 
-  const close = () => setNeedRefresh(false);
+  // Auto-reload when update is available
+  useEffect(() => {
+    if (needRefresh) {
+      setShowNotice(true);
+      // Auto-reload after 2 seconds
+      const timer = setTimeout(() => {
+        updateServiceWorker(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [needRefresh, updateServiceWorker]);
 
-  if (!needRefresh) return null;
+  if (!showNotice) return null;
 
   return (
-    <div className="fixed bottom-16 left-4 right-4 z-[10000] flex justify-center">
-      <div className="bg-[hsl(var(--gb-lightest))] border-4 border-[hsl(var(--gb-darkest))] p-4 max-w-sm w-full shadow-[4px_4px_0px_0px_hsl(var(--gb-darkest))]">
-        <p className="text-[10px] text-[hsl(var(--gb-darkest))] font-bold uppercase tracking-wider mb-1">
-          UPDATE AVAILABLE
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-[hsl(var(--gb-darkest))]">
+      <div className="text-center">
+        <p className="text-[12px] text-[hsl(var(--gb-lightest))] font-bold uppercase tracking-wider mb-2">
+          UPDATING...
         </p>
-        <p className="text-[8px] text-[hsl(var(--gb-dark))] mb-4">
-          A new version of TRIM Boy is ready.
+        <p className="text-[9px] text-[hsl(var(--gb-light))]">
+          Installing new version
         </p>
-        <div className="flex gap-2">
-          <RetroButton
-            onClick={close}
-            className="text-[9px] py-2"
-            fullWidth
-          >
-            LATER
-          </RetroButton>
-          <RetroButton
-            onClick={() => updateServiceWorker(true)}
-            className="text-[9px] py-2"
-            fullWidth
-          >
-            UPDATE
-          </RetroButton>
-        </div>
       </div>
     </div>
   );
