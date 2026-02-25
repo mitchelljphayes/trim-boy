@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -31,7 +31,9 @@ import Backend from "@/pages/Backend";
 import { LCDOverlay } from "@/components/LCDOverlay";
 import { StormBackground } from "@/components/StormBackground";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
+import { EvolutionOverlay } from "@/components/EvolutionOverlay";
 import { getStreak, isGbcUnlocked } from "@/lib/streakManager";
+import type { EvolutionTier } from "@/hooks/use-progress";
 
 // Root redirect - sends to login or dashboard based on auth state
 function RootRedirect() {
@@ -158,6 +160,7 @@ function Router() {
 
 function App() {
   const [activeTheme, setActiveTheme] = useState("classic");
+  const [evolutionTier, setEvolutionTier] = useState<EvolutionTier>('NONE');
 
   useEffect(() => {
     const root = document.getElementById("app-root");
@@ -178,6 +181,23 @@ function App() {
     }
     root.classList.add(`theme-${saved}`);
     setActiveTheme(saved);
+  }, []);
+
+  // Listen for evolution-ready events from Dashboard
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.tier && detail.tier !== 'NONE') {
+        setEvolutionTier(detail.tier);
+      }
+    };
+    window.addEventListener('evolution-ready', handler);
+    return () => window.removeEventListener('evolution-ready', handler);
+  }, []);
+
+  const handleEvolutionComplete = useCallback((tier: EvolutionTier) => {
+    setEvolutionTier('NONE');
+    // Theme classes are updated by the overlay itself
   }, []);
 
   useEffect(() => {
@@ -236,6 +256,12 @@ function App() {
             </span>
           )}
           <PWAUpdatePrompt />
+          {evolutionTier !== 'NONE' && (
+            <EvolutionOverlay 
+              tier={evolutionTier} 
+              onEvolutionComplete={handleEvolutionComplete} 
+            />
+          )}
         </QueryClientProvider>
       </AuthProvider>
     </div>

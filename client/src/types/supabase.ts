@@ -63,6 +63,66 @@ export interface Database {
         };
         Relationships: [];
       };
+      user_progress: {
+        Row: {
+          user_id: string;
+          streak_count: number;
+          streak_week: string | null;
+          gbc_unlocked_at: string | null;
+          gold_unlocked_at: string | null;
+          lightning_unlocked_at: string | null;
+          total_mastery: number;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          user_id: string;
+          streak_count?: number;
+          streak_week?: string | null;
+          gbc_unlocked_at?: string | null;
+          gold_unlocked_at?: string | null;
+          lightning_unlocked_at?: string | null;
+          total_mastery?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          user_id?: string;
+          streak_count?: number;
+          streak_week?: string | null;
+          gbc_unlocked_at?: string | null;
+          gold_unlocked_at?: string | null;
+          lightning_unlocked_at?: string | null;
+          total_mastery?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      milestones: {
+        Row: {
+          id: number;
+          user_id: string;
+          achievement: string;
+          week_id: string;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: number;
+          user_id: string;
+          achievement: string;
+          week_id: string;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: number;
+          user_id?: string;
+          achievement?: string;
+          week_id?: string;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -75,3 +135,10 @@ export interface Database {
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Log = Database['public']['Tables']['logs']['Row'];
 export type LogInsert = Database['public']['Tables']['logs']['Insert'];
+export type UserProgress = Database['public']['Tables']['user_progress']['Row'];
+export type UserProgressUpdate = Database['public']['Tables']['user_progress']['Update'];
+export type Milestone = Database['public']['Tables']['milestones']['Row'];
+export type MilestoneInsert = Database['public']['Tables']['milestones']['Insert'];
+
+// Achievement types
+export type Achievement = 'GBC_UNLOCK' | 'GOLD_UNLOCK' | 'LIGHTNING_UNLOCK' | 'GOLD_STATUS';

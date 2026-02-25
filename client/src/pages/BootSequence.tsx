@@ -1,10 +1,9 @@
-
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { useAudio } from '@/hooks/use-audio';
 import { getStreak, getEvolutionTier, setGoldAnnouncedThisSession, setLightningAnnouncedThisSession } from '@/lib/streakManager';
 import { EvolutionOverlay } from '@/components/EvolutionOverlay';
-import type { EvolutionTier } from '@/lib/streakManager';
+import type { EvolutionTier } from '@/hooks/use-progress';
 import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
 import goldTrimBoy from "@assets/trimboy_gold_1770407871261.png";
 import lightningTrimBoy from "@assets/lioghtning_boy_1770409502230.png";
@@ -189,7 +188,7 @@ export default function BootSequence() {
 
   if (showEvolution) {
     return (
-      <EvolutionOverlay onEvolutionComplete={handleEvolutionComplete} />
+      <EvolutionOverlay tier={evolutionTier.current} onEvolutionComplete={handleEvolutionComplete} />
     );
   }
 

@@ -3,12 +3,13 @@ import { useLocation } from "wouter";
 import { FolderArchive, Star, BatteryCharging, Music, VolumeX, LogOut } from "lucide-react";
 import { HardwareToggle } from "@/components/HardwareToggle";
 import { useWeeklyStats, useCreateLog } from "@/hooks/use-trim";
+import { useStreakSync, type EvolutionTier } from "@/hooks/use-progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { PowerCells } from "@/components/PowerCells";
 import { HabitGrid } from "@/components/HabitGrid";
 import { RetroButton } from "@/components/RetroButton";
 import { hasYogaToday } from "@/pages/Yoga";
-import { checkAndUpdateStreak, getStreak, isProtocolComplete } from "@/lib/streakManager";
+import { isProtocolComplete } from "@/lib/streakManager";
 import { playSecretCream } from "@/lib/chiptune";
 import { playEvangelion } from "@/lib/evangelion";
 import trimBoySprite from "@assets/trimboysprite01_1770372116288.png";
@@ -17,7 +18,6 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const { user, profile, signOut } = useAuth();
   const [yogaStar, setYogaStar] = useState(hasYogaToday);
-  const [streak, setStreak] = useState(getStreak);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [secretActive, setSecretActive] = useState(false);
   const [secretFlash, setSecretFlash] = useState(false);
@@ -27,7 +27,6 @@ export default function Dashboard() {
   const [musicMuted, setMusicMuted] = useState(() => 
     localStorage.getItem("trim_music_muted") === "true"
   );
-  const lastCheckedStats = useRef<string>("");
 
   // Get user info from auth context
   const userId = user?.id ?? null;
@@ -42,19 +41,33 @@ export default function Dashboard() {
   const { data: stats } = useWeeklyStats(userId);
   const { isPending } = useCreateLog();
 
-  useEffect(() => {
-    if (!stats) return;
-    const statsKey = `${stats.strengthCount}-${stats.runCount}`;
-    if (lastCheckedStats.current === statsKey) return;
-    lastCheckedStats.current = statsKey;
-    const result = checkAndUpdateStreak(stats.strengthCount, stats.runCount);
-    setStreak(result.streak);
-    window.dispatchEvent(new Event('streak-update'));
-    if (result.justCompleted) {
-      setShowLevelUp(true);
-      setTimeout(() => setShowLevelUp(false), 4000);
+  // Handle evolution trigger - dispatches event for App.tsx to show overlay
+  const handleEvolutionReady = useCallback((tier: EvolutionTier) => {
+    if (tier !== 'NONE') {
+      window.dispatchEvent(new CustomEvent('evolution-ready', { detail: { tier } }));
     }
-  }, [stats]);
+  }, []);
+
+  // Streak sync hook - handles DB updates and triggers evolution callback
+  const { streak } = useStreakSync(
+    userId,
+    stats?.strengthCount ?? 0,
+    stats?.runCount ?? 0,
+    handleEvolutionReady
+  );
+
+  // Listen for level-up events from streak sync
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.justCompleted) {
+        setShowLevelUp(true);
+        setTimeout(() => setShowLevelUp(false), 4000);
+      }
+    };
+    window.addEventListener('streak-update', handler);
+    return () => window.removeEventListener('streak-update', handler);
+  }, []);
 
   const protocolComplete = stats ? isProtocolComplete(stats.strengthCount, stats.runCount) : false;
 

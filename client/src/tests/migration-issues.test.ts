@@ -140,11 +140,11 @@ describe('Migration Issues: Express → Supabase', () => {
 
   // ─── useCreateLog hook gets user from Supabase auth ────────
   describe('useCreateLog hook correctly uses Supabase auth', () => {
-    it('hook calls supabase.auth.getUser() internally', () => {
+    it('hook calls supabase.auth.getSession() internally', () => {
       const source = readSourceFile('hooks/use-trim.ts');
 
-      // Verify the hook gets user from Supabase auth, not from a parameter
-      expect(source).toContain('supabase.auth.getUser()');
+      // Verify the hook gets session from Supabase auth (cached, no network request)
+      expect(source).toContain('supabase.auth.getSession()');
 
       // The hook throws 'Not authenticated' when no user
       expect(source).toContain("throw new Error('Not authenticated')");

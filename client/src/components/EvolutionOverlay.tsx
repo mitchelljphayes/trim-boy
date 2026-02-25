@@ -1,16 +1,19 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useAudio } from '@/hooks/use-audio';
 import {
-  getEvolutionTier,
+  setGbcAnnouncedThisSession,
+  setGoldAnnouncedThisSession,
+  setLightningAnnouncedThisSession,
+  useMarkEvolutionSeen,
+  type EvolutionTier,
+} from '@/hooks/use-progress';
+import {
   setGbcUnlocked,
   setGbcAnnounced,
-  setGoldAnnouncedThisSession,
   setLightningUnlocked,
   setLightningAnnounced,
-  setLightningAnnouncedThisSession,
   logEvolutionEvent,
 } from '@/lib/streakManager';
-import type { EvolutionTier } from '@/lib/streakManager';
 import goldTrimBoy from "@assets/trimboy_gold_1770407871261.png";
 import lightningTrimBoy from "@assets/lioghtning_boy_1770409502230.png";
 
@@ -284,21 +287,20 @@ function LightningTransition({ onComplete }: { onComplete: () => void }) {
 }
 
 interface EvolutionOverlayProps {
+  tier: EvolutionTier;
   onEvolutionComplete: (tier: EvolutionTier) => void;
 }
 
-export function EvolutionOverlay({ onEvolutionComplete }: EvolutionOverlayProps) {
-  const [activeTier, setActiveTier] = useState<EvolutionTier>('NONE');
+export function EvolutionOverlay({ tier, onEvolutionComplete }: EvolutionOverlayProps) {
   const [phase, setPhase] = useState<'idle' | 'fireworks' | 'fireworks_text' | 'flame' | 'lightning' | 'done'>('idle');
   const { playFireworksBurst, playFlameRoar, playGoldenChime, playThunderclap, playStormChime, initAudio } = useAudio();
   const hasStarted = useRef(false);
+  const markEvolutionSeen = useMarkEvolutionSeen();
 
   useEffect(() => {
     if (hasStarted.current) return;
-    const tier = getEvolutionTier();
     if (tier === 'NONE') return;
     hasStarted.current = true;
-    setActiveTier(tier);
 
     initAudio();
 
@@ -312,12 +314,14 @@ export function EvolutionOverlay({ onEvolutionComplete }: EvolutionOverlayProps)
       setPhase('lightning');
       playThunderclap();
     }
-  }, [initAudio, playFireworksBurst, playFlameRoar, playThunderclap]);
+  }, [tier, initAudio, playFireworksBurst, playFlameRoar, playThunderclap]);
 
   const handleFireworksComplete = useCallback(() => {
     setPhase('fireworks_text');
     setGbcUnlocked();
     setGbcAnnounced();
+    setGbcAnnouncedThisSession();
+    markEvolutionSeen('GBC_UNLOCK');
     logEvolutionEvent('GBC_UNLOCK');
 
     const root = document.getElementById('app-root');
@@ -332,23 +336,25 @@ export function EvolutionOverlay({ onEvolutionComplete }: EvolutionOverlayProps)
       setPhase('flame');
       playFlameRoar();
     }, 2500);
-  }, [playFlameRoar]);
+  }, [playFlameRoar, markEvolutionSeen]);
 
   const handleFlameComplete = useCallback(() => {
     setGoldAnnouncedThisSession();
+    markEvolutionSeen('GOLD_UNLOCK');
     logEvolutionEvent('GOLD_UNLOCK');
     playGoldenChime();
 
     setTimeout(() => {
       setPhase('done');
-      onEvolutionComplete(activeTier);
+      onEvolutionComplete(tier);
     }, 800);
-  }, [onEvolutionComplete, activeTier, playGoldenChime]);
+  }, [onEvolutionComplete, tier, playGoldenChime, markEvolutionSeen]);
 
   const handleLightningComplete = useCallback(() => {
     setLightningUnlocked();
     setLightningAnnounced();
     setLightningAnnouncedThisSession();
+    markEvolutionSeen('LIGHTNING_UNLOCK');
     logEvolutionEvent('LIGHTNING_UNLOCK');
     playStormChime();
 
@@ -361,9 +367,9 @@ export function EvolutionOverlay({ onEvolutionComplete }: EvolutionOverlayProps)
 
     setTimeout(() => {
       setPhase('done');
-      onEvolutionComplete(activeTier);
+      onEvolutionComplete(tier);
     }, 800);
-  }, [onEvolutionComplete, activeTier, playStormChime]);
+  }, [onEvolutionComplete, tier, playStormChime, markEvolutionSeen]);
 
   if (phase === 'idle' || phase === 'done') return null;
 

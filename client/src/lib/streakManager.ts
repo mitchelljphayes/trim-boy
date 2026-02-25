@@ -1,16 +1,37 @@
-import { startOfWeek, format, differenceInCalendarWeeks } from 'date-fns';
+/**
+ * Streak Manager - localStorage cache layer
+ * 
+ * The source of truth is now Supabase (user_progress table).
+ * This module provides synchronous access to cached values for:
+ * - Initial page load (before React hydrates)
+ * - Theme determination
+ * - Offline fallback
+ * 
+ * The useUserProgress and useStreakSync hooks handle DB sync.
+ */
 
-const STREAK_KEY = 'trim_streak_count';
-const STREAK_WEEK_KEY = 'trim_streak_week';
-const STREAK_CELEBRATED_KEY = 'trim_streak_celebrated';
-const MILESTONES_KEY = 'trim_milestones';
-const MASTERY_COUNT_KEY = 'trim_mastery_total';
-const GBC_UNLOCKED_KEY = 'trim_gbc_unlocked';
-const GBC_ANNOUNCED_KEY = 'trim_gbc_announced';
-const GOLD_ANNOUNCED_KEY = 'trim_gold_announced_session';
-const LIGHTNING_UNLOCKED_KEY = 'trim_lightning_unlocked';
-const LIGHTNING_ANNOUNCED_KEY = 'trim_lightning_announced';
-const LIGHTNING_ANNOUNCED_SESSION_KEY = 'trim_lightning_announced_session';
+import { startOfWeek, format } from 'date-fns';
+
+// localStorage keys (synced from DB via hooks)
+const CACHE_KEYS = {
+  STREAK_COUNT: 'trim_streak_count',
+  STREAK_WEEK: 'trim_streak_week',
+  GBC_UNLOCKED: 'trim_gbc_unlocked',
+  GOLD_UNLOCKED: 'trim_gold_unlocked',
+  LIGHTNING_UNLOCKED: 'trim_lightning_unlocked',
+  TOTAL_MASTERY: 'trim_mastery_total',
+  MILESTONES: 'trim_milestones',
+  // Legacy keys for migration
+  GBC_ANNOUNCED: 'trim_gbc_announced',
+  LIGHTNING_ANNOUNCED: 'trim_lightning_announced',
+} as const;
+
+// Session storage for "already shown this session" flags
+const SESSION_KEYS = {
+  GBC_ANNOUNCED: 'trim_gbc_announced_session',
+  GOLD_ANNOUNCED: 'trim_gold_announced_session',
+  LIGHTNING_ANNOUNCED: 'trim_lightning_announced_session',
+} as const;
 
 export interface Milestone {
   date: string;
@@ -21,41 +42,102 @@ export interface Milestone {
 
 export type EvolutionTier = 'NONE' | 'GBC_UNLOCK' | 'GOLD_UNLOCK' | 'LIGHTNING_UNLOCK';
 
-function getCurrentWeekId(): string {
+// === CACHE READERS (synchronous, for non-React code) ===
+
+export function getCurrentWeekId(): string {
   return format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
 }
 
-function getWeekDiff(weekIdA: string, weekIdB: string): number {
-  return differenceInCalendarWeeks(new Date(weekIdA), new Date(weekIdB), { weekStartsOn: 1 });
-}
-
 export function getStreak(): number {
-  const weekId = getCurrentWeekId();
-  const savedWeek = localStorage.getItem(STREAK_WEEK_KEY);
-
-  if (!savedWeek) return 0;
-
-  const diff = getWeekDiff(weekId, savedWeek);
-
-  if (diff > 1) {
-    localStorage.setItem(STREAK_KEY, '0');
-    localStorage.removeItem(STREAK_WEEK_KEY);
-    return 0;
-  }
-
-  return parseInt(localStorage.getItem(STREAK_KEY) || '0', 10);
+  return parseInt(localStorage.getItem(CACHE_KEYS.STREAK_COUNT) || '0', 10);
 }
 
-export function getMilestones(): Milestone[] {
-  try {
-    return JSON.parse(localStorage.getItem(MILESTONES_KEY) || '[]');
-  } catch {
-    return [];
-  }
+export function getStreakWeek(): string | null {
+  return localStorage.getItem(CACHE_KEYS.STREAK_WEEK);
 }
 
 export function getTotalMastery(): number {
-  return parseInt(localStorage.getItem(MASTERY_COUNT_KEY) || '0', 10);
+  return parseInt(localStorage.getItem(CACHE_KEYS.TOTAL_MASTERY) || '0', 10);
+}
+
+export function isGbcUnlocked(): boolean {
+  return localStorage.getItem(CACHE_KEYS.GBC_UNLOCKED) === 'true';
+}
+
+export function isGoldUnlocked(): boolean {
+  return localStorage.getItem(CACHE_KEYS.GOLD_UNLOCKED) === 'true';
+}
+
+export function isLightningUnlocked(): boolean {
+  return localStorage.getItem(CACHE_KEYS.LIGHTNING_UNLOCKED) === 'true';
+}
+
+// === SESSION-BASED "ANNOUNCED THIS SESSION" ===
+
+export function isGbcAnnouncedThisSession(): boolean {
+  return sessionStorage.getItem(SESSION_KEYS.GBC_ANNOUNCED) === 'true';
+}
+
+export function setGbcAnnouncedThisSession(): void {
+  sessionStorage.setItem(SESSION_KEYS.GBC_ANNOUNCED, 'true');
+}
+
+export function isGoldAnnouncedThisSession(): boolean {
+  return sessionStorage.getItem(SESSION_KEYS.GOLD_ANNOUNCED) === 'true';
+}
+
+export function setGoldAnnouncedThisSession(): void {
+  sessionStorage.setItem(SESSION_KEYS.GOLD_ANNOUNCED, 'true');
+}
+
+export function isLightningAnnouncedThisSession(): boolean {
+  return sessionStorage.getItem(SESSION_KEYS.LIGHTNING_ANNOUNCED) === 'true';
+}
+
+export function setLightningAnnouncedThisSession(): void {
+  sessionStorage.setItem(SESSION_KEYS.LIGHTNING_ANNOUNCED, 'true');
+}
+
+// === EVOLUTION TIER (for initial load, before hooks) ===
+
+export function getEvolutionTier(): EvolutionTier {
+  const streak = getStreak();
+
+  // Lightning: streak >= 5, not yet announced this session
+  if (streak >= 5 && isLightningUnlocked() && !isLightningAnnouncedThisSession()) {
+    return 'LIGHTNING_UNLOCK';
+  }
+
+  // Gold: streak >= 2, not yet announced this session
+  if (streak >= 2 && isGoldUnlocked() && !isGoldAnnouncedThisSession()) {
+    if (!isGbcUnlocked() || !isGbcAnnouncedThisSession()) {
+      return 'GBC_UNLOCK';
+    }
+    return 'GOLD_UNLOCK';
+  }
+
+  // GBC: streak >= 1, not yet announced this session
+  if (streak >= 1 && isGbcUnlocked() && !isGbcAnnouncedThisSession()) {
+    return 'GBC_UNLOCK';
+  }
+
+  return 'NONE';
+}
+
+// === PROTOCOL HELPERS ===
+
+export function isProtocolComplete(strengthCount: number, runCount: number): boolean {
+  return strengthCount >= 4 && runCount >= 2;
+}
+
+// === MILESTONES (from localStorage cache) ===
+
+export function getMilestones(): Milestone[] {
+  try {
+    return JSON.parse(localStorage.getItem(CACHE_KEYS.MILESTONES) || '[]');
+  } catch {
+    return [];
+  }
 }
 
 export function getGoldWeekIds(): Set<string> {
@@ -67,79 +149,61 @@ export function hasEverReachedGold(): boolean {
   return getMilestones().some(m => m.achievement === 'GOLD_STATUS');
 }
 
-export function isGbcUnlocked(): boolean {
-  return localStorage.getItem(GBC_UNLOCKED_KEY) === 'true';
+// === CACHE WRITERS (called by hooks after DB sync) ===
+
+export function cacheStreak(count: number, week: string | null): void {
+  localStorage.setItem(CACHE_KEYS.STREAK_COUNT, String(count));
+  if (week) {
+    localStorage.setItem(CACHE_KEYS.STREAK_WEEK, week);
+  } else {
+    localStorage.removeItem(CACHE_KEYS.STREAK_WEEK);
+  }
 }
 
-export function setGbcUnlocked() {
-  localStorage.setItem(GBC_UNLOCKED_KEY, 'true');
+export function cacheUnlocks(gbc: boolean, gold: boolean, lightning: boolean): void {
+  localStorage.setItem(CACHE_KEYS.GBC_UNLOCKED, gbc ? 'true' : 'false');
+  localStorage.setItem(CACHE_KEYS.GOLD_UNLOCKED, gold ? 'true' : 'false');
+  localStorage.setItem(CACHE_KEYS.LIGHTNING_UNLOCKED, lightning ? 'true' : 'false');
+}
+
+export function cacheTotalMastery(total: number): void {
+  localStorage.setItem(CACHE_KEYS.TOTAL_MASTERY, String(total));
+}
+
+export function cacheMilestones(milestones: Milestone[]): void {
+  localStorage.setItem(CACHE_KEYS.MILESTONES, JSON.stringify(milestones));
+}
+
+// === LEGACY COMPATIBILITY ===
+
+// These functions are kept for backwards compatibility during migration
+// They will be called by the old code paths until fully migrated
+
+export function setGbcUnlocked(): void {
+  localStorage.setItem(CACHE_KEYS.GBC_UNLOCKED, 'true');
 }
 
 export function isGbcAnnounced(): boolean {
-  return localStorage.getItem(GBC_ANNOUNCED_KEY) === 'true';
+  return localStorage.getItem(CACHE_KEYS.GBC_ANNOUNCED) === 'true';
 }
 
-export function setGbcAnnounced() {
-  localStorage.setItem(GBC_ANNOUNCED_KEY, 'true');
+export function setGbcAnnounced(): void {
+  localStorage.setItem(CACHE_KEYS.GBC_ANNOUNCED, 'true');
 }
 
-export function isGoldAnnouncedThisSession(): boolean {
-  return sessionStorage.getItem(GOLD_ANNOUNCED_KEY) === 'true';
-}
-
-export function setGoldAnnouncedThisSession() {
-  sessionStorage.setItem(GOLD_ANNOUNCED_KEY, 'true');
-}
-
-export function isLightningUnlocked(): boolean {
-  return localStorage.getItem(LIGHTNING_UNLOCKED_KEY) === 'true';
-}
-
-export function setLightningUnlocked() {
-  localStorage.setItem(LIGHTNING_UNLOCKED_KEY, 'true');
+export function setLightningUnlocked(): void {
+  localStorage.setItem(CACHE_KEYS.LIGHTNING_UNLOCKED, 'true');
 }
 
 export function isLightningAnnounced(): boolean {
-  return localStorage.getItem(LIGHTNING_ANNOUNCED_KEY) === 'true';
+  return localStorage.getItem(CACHE_KEYS.LIGHTNING_ANNOUNCED) === 'true';
 }
 
-export function setLightningAnnounced() {
-  localStorage.setItem(LIGHTNING_ANNOUNCED_KEY, 'true');
+export function setLightningAnnounced(): void {
+  localStorage.setItem(CACHE_KEYS.LIGHTNING_ANNOUNCED, 'true');
 }
 
-export function isLightningAnnouncedThisSession(): boolean {
-  return sessionStorage.getItem(LIGHTNING_ANNOUNCED_SESSION_KEY) === 'true';
-}
-
-export function setLightningAnnouncedThisSession() {
-  sessionStorage.setItem(LIGHTNING_ANNOUNCED_SESSION_KEY, 'true');
-}
-
-export function getEvolutionTier(): EvolutionTier {
-  const streak = getStreak();
-
-  // 5+ week streak: Lightning Edition unlock
-  if (streak >= 5 && !isLightningAnnouncedThisSession()) {
-    return 'LIGHTNING_UNLOCK';
-  }
-
-  // 2+ week streak: Gold Edition unlock (if GBC already announced)
-  if (streak >= 2 && !isGoldAnnouncedThisSession()) {
-    if (!isGbcAnnounced()) {
-      return 'GBC_UNLOCK';
-    }
-    return 'GOLD_UNLOCK';
-  }
-
-  // 1+ week streak: GBC (Color) unlock
-  if (streak >= 1 && !isGbcAnnounced()) {
-    return 'GBC_UNLOCK';
-  }
-
-  return 'NONE';
-}
-
-export function logEvolutionEvent(achievement: 'GBC_UNLOCK' | 'GOLD_UNLOCK' | 'LIGHTNING_UNLOCK') {
+export function logEvolutionEvent(achievement: 'GBC_UNLOCK' | 'GOLD_UNLOCK' | 'LIGHTNING_UNLOCK'): void {
   const milestones = getMilestones();
   const weekId = getCurrentWeekId();
 
@@ -151,72 +215,28 @@ export function logEvolutionEvent(achievement: 'GBC_UNLOCK' | 'GOLD_UNLOCK' | 'L
   milestones.push({
     date: new Date().toISOString(),
     achievement,
-    status: achievement === 'GBC_UNLOCK' ? 'HARDWARE EVOLVED' : achievement === 'LIGHTNING_UNLOCK' ? 'STORM ACTIVATED' : 'GOLD ACTIVATED',
+    status: achievement === 'GBC_UNLOCK' 
+      ? 'HARDWARE EVOLVED' 
+      : achievement === 'LIGHTNING_UNLOCK' 
+        ? 'STORM ACTIVATED' 
+        : 'GOLD ACTIVATED',
     weekId,
   });
-  localStorage.setItem(MILESTONES_KEY, JSON.stringify(milestones));
+  localStorage.setItem(CACHE_KEYS.MILESTONES, JSON.stringify(milestones));
 }
 
-function logMilestone(weekId: string) {
-  const milestones = getMilestones();
-  const alreadyLogged = milestones.some(m => m.weekId === weekId && m.achievement === 'GOLD_STATUS');
-  if (alreadyLogged) return;
-
-  milestones.push({
-    date: new Date().toISOString(),
-    achievement: 'GOLD_STATUS',
-    status: 'MASTERED',
-    weekId,
-  });
-  localStorage.setItem(MILESTONES_KEY, JSON.stringify(milestones));
-}
-
-function incrementMastery() {
-  const current = getTotalMastery();
-  localStorage.setItem(MASTERY_COUNT_KEY, String(current + 1));
-}
-
+/**
+ * @deprecated Use useStreakSync hook instead
+ * Kept for backwards compatibility during migration
+ */
 export function checkAndUpdateStreak(strengthCount: number, runCount: number): {
   streak: number;
   justCompleted: boolean;
 } {
-  const weekId = getCurrentWeekId();
-  const protocolMet = strengthCount >= 4 && runCount >= 2;
-  const celebratedWeek = localStorage.getItem(STREAK_CELEBRATED_KEY);
-  const alreadyCelebrated = celebratedWeek === weekId;
-
-  if (!protocolMet) {
-    return { streak: getStreak(), justCompleted: false };
-  }
-
-  if (alreadyCelebrated) {
-    return { streak: getStreak(), justCompleted: false };
-  }
-
-  const savedWeek = localStorage.getItem(STREAK_WEEK_KEY);
-  let currentStreak = parseInt(localStorage.getItem(STREAK_KEY) || '0', 10);
-
-  if (savedWeek) {
-    const diff = getWeekDiff(weekId, savedWeek);
-    if (diff > 1) {
-      currentStreak = 0;
-    }
-  }
-
-  currentStreak += 1;
-  localStorage.setItem(STREAK_KEY, String(currentStreak));
-  localStorage.setItem(STREAK_WEEK_KEY, weekId);
-  localStorage.setItem(STREAK_CELEBRATED_KEY, weekId);
-
-  incrementMastery();
-
-  if (currentStreak >= 2) {
-    logMilestone(weekId);
-  }
-
-  return { streak: currentStreak, justCompleted: true };
-}
-
-export function isProtocolComplete(strengthCount: number, runCount: number): boolean {
-  return strengthCount >= 4 && runCount >= 2;
+  // This is now a no-op that just returns cached values
+  // The actual logic is in useStreakSync hook
+  return { 
+    streak: getStreak(), 
+    justCompleted: false 
+  };
 }

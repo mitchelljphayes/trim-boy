@@ -36,7 +36,23 @@ export default function RunLog() {
           setTimeout(() => setLocation('/dashboard'), 1500);
         },
         onError: (err) => {
-          console.error('Failed to log run:', err);
+          // Debug: log full error details
+          console.error('Failed to log run:', {
+            error: err,
+            name: err instanceof Error ? err.name : 'unknown',
+            message: err instanceof Error ? err.message : String(err),
+            constructor: err?.constructor?.name,
+          });
+          
+          // Ignore abort errors (caused by component unmount or navigation)
+          const isAbortError = 
+            (err instanceof DOMException && err.name === 'AbortError') ||
+            (err instanceof Error && err.message.toLowerCase().includes('abort'));
+          
+          if (isAbortError) {
+            return;
+          }
+          
           setError(err instanceof Error ? err.message : 'Failed to save log');
         },
       }
