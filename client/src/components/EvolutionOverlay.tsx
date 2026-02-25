@@ -298,13 +298,16 @@ export function EvolutionOverlay({ tier, onEvolutionComplete }: EvolutionOverlay
   const markEvolutionSeen = useMarkEvolutionSeen();
 
   useEffect(() => {
+    console.log('[EvolutionOverlay] useEffect running, tier:', tier, 'hasStarted:', hasStarted.current);
     if (hasStarted.current) return;
     if (tier === 'NONE') return;
     hasStarted.current = true;
 
+    console.log('[EvolutionOverlay] starting animation for tier:', tier);
     initAudio();
 
     if (tier === 'GBC_UNLOCK') {
+      console.log('[EvolutionOverlay] setting phase to fireworks');
       setPhase('fireworks');
       playFireworksBurst();
     } else if (tier === 'GOLD_UNLOCK') {

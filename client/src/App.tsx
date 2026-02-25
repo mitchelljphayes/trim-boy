@@ -187,11 +187,14 @@ function App() {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
+      console.log('[App] evolution-ready event received:', detail);
       if (detail?.tier && detail.tier !== 'NONE') {
+        console.log('[App] setting evolutionTier to:', detail.tier);
         setEvolutionTier(detail.tier);
       }
     };
     window.addEventListener('evolution-ready', handler);
+    console.log('[App] evolution-ready listener registered');
     return () => window.removeEventListener('evolution-ready', handler);
   }, []);
 
