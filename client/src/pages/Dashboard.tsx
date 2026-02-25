@@ -43,9 +43,7 @@ export default function Dashboard() {
 
   // Handle evolution trigger - dispatches event for App.tsx to show overlay
   const handleEvolutionReady = useCallback((tier: EvolutionTier) => {
-    console.log('[Dashboard] handleEvolutionReady called with:', tier);
     if (tier !== 'NONE') {
-      console.log('[Dashboard] dispatching evolution-ready event');
       window.dispatchEvent(new CustomEvent('evolution-ready', { detail: { tier } }));
     }
   }, []);

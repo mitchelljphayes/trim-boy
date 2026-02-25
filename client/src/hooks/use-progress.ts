@@ -345,23 +345,10 @@ export function useStreakSync(
       { userId, strengthCount, runCount },
       {
         onSuccess: (result) => {
-          console.log('[useStreakSync] mutation success:', {
-            streak: result.progress.streak_count,
-            justCompleted: result.justCompleted,
-            pendingEvolution: result.pendingEvolution,
-            gbc_unlocked_at: result.progress.gbc_unlocked_at,
-          });
-          
           pendingEvolutionRef.current = result.pendingEvolution;
           
           if (result.pendingEvolution !== 'NONE' && onEvolutionReady) {
-            console.log('[useStreakSync] calling onEvolutionReady with:', result.pendingEvolution);
             onEvolutionReady(result.pendingEvolution);
-          } else {
-            console.log('[useStreakSync] NOT calling onEvolutionReady:', {
-              pendingEvolution: result.pendingEvolution,
-              hasCallback: !!onEvolutionReady,
-            });
           }
           
           // Dispatch event for other components
